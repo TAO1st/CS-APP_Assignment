@@ -134,7 +134,7 @@ NOTES:
  */
 
 #endif
-//1
+//1 REVIEW: Self-tested
 /* 
  * bitXor - x^y using only ~ and & 
  *   Example: bitXor(4, 5) = 1
@@ -144,9 +144,9 @@ NOTES:
  */
 int bitXor(int x, int y)
 {
-  return ~(~x & y) & ~(x & ~y);
+  return ~(~(~x & y) & ~(x & ~y));
 }
-/* 
+/* REVIEW: Self-tested
  * tmin - return minimum two's complement integer 
  *   Legal ops: ! ~ & ^ | + << >>
  *   Max ops: 4
@@ -155,10 +155,10 @@ int bitXor(int x, int y)
 int tmin(void)
 {
 
-  return 2;
+  return ~(1 << 31) + 1;
 }
 //2
-/*
+/* REVIEW: Self-tested
  * isTmax - returns 1 if x is the maximum, two's complement number,
  *     and 0 otherwise 
  *   Legal ops: ! ~ & ^ | +
@@ -167,7 +167,9 @@ int tmin(void)
  */
 int isTmax(int x)
 {
-  return 2;
+  int Tmax = (1 << 31) + (~1) + 1;
+  int notTmax = x ^ Tmax;
+  return !notTmax;
 }
 /* 
  * allOddBits - return 1 if all odd-numbered bits in word set to 1
