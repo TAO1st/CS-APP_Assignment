@@ -249,7 +249,7 @@ int isLessOrEqual(int x, int y)
   return notGreater & (isEqual | less | xisLessOrEqualy);
 }
 //4
-/* 
+/* REVIEW: Self-tested
  * logicalNeg - implement the ! operator, using all of 
  *              the legal operators except !
  *   Examples: logicalNeg(3) = 0, logicalNeg(0) = 1
@@ -259,7 +259,11 @@ int isLessOrEqual(int x, int y)
  */
 int logicalNeg(int x)
 {
-  return 2;
+  int flag = (8 << 28);                 // sign flag = 0x10000..00
+  int xSign = !!(x & flag);             // handle 0x80000000 case
+  int toLogical = ((~x + 1) ^ x) >> 31; // if x = 0, toLogical = 0; else, toLogical = 1
+
+  return (~xSign) & (toLogical + 1); // (~xSign)&(~toLogical+2);
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
@@ -291,7 +295,22 @@ int howManyBits(int x)
  */
 unsigned floatScale2(unsigned uf)
 {
-  return 2;
+  unsigned sexp = (uf >> 23);
+  if (sexp == 0x7fff || sexp == 0xffff || uf == 0x0 || uf == 0x80000000)
+  {
+    return uf;
+  }
+  unsigned frac = uf - (sexp << 23);
+  if (frac == 0)
+  {
+    sexp++;
+  }
+  else
+  {
+    frac = frac << 1;
+  }
+  unsigned total = (sexp << 23) + frac;
+  return total;
 }
 /* 
  * floatFloat2Int - Return bit-level equivalent of expression (int) f
@@ -327,8 +346,8 @@ unsigned floatPower2(int x)
   return 2;
 }
 
-// int main(int argc, char const *argv[])
-// {
-//   int c = isLessOrEqual(0x7fffffff, 0x80000000);
-//   return 0;
-// }
+int main(int argc, char const *argv[])
+{
+  unsigned c = floatScale2(0x80800000);
+  return 0;
+}

@@ -23,16 +23,34 @@
         },
         {
             "type": "shell",
-            "label": "Make",
+            "label": "Make and test",
+            "dependsOn": [
+                "btest",
+            ],
+            "group": "build"
+        },
+        {
+            "type": "shell",
+            "label": "make clean",
             "command": [
                 "make clean",
+            ],
+        },
+        {
+            "type": "shell",
+            "label": "make",
+            "command": [
                 "make",
+            ],
+            "dependsOn": "make clean",
+        },
+        {
+            "type": "shell",
+            "label": "btest",
+            "command": [
                 "./btest",
             ],
-            "options": {
-                "cwd": "/usr/bin"
-            },
-            "group": "build"
-        }
+            "dependsOn": "make",
+        },
     ]
 }
