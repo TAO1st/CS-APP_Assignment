@@ -3,6 +3,7 @@
  * 
  * Author: Li Li
  * E_mail: Lil147@pitt.edu
+ * Date:   Mar. 27, 2020
  * 
  * bits.c - Source file with your solutions to the Lab.
  *          This is the file you will hand in to your instructor.
@@ -171,7 +172,7 @@ int isTmax(int x)
   int notTmax = x ^ Tmax;
   return !notTmax;
 }
-/* 
+/* REVIEW: Self-tested
  * allOddBits - return 1 if all odd-numbered bits in word set to 1
  *   where bits are numbered from 0 (least significant) to 31 (most significant)
  *   Examples allOddBits(0xFFFFFFFD) = 0, allOddBits(0xAAAAAAAA) = 1
@@ -181,9 +182,11 @@ int isTmax(int x)
  */
 int allOddBits(int x)
 {
-  return 2;
+  int pattern = (((((0xAA << 8) + 0xAA) << 8) + 0xAA) << 8) + 0xAA;
+  int isAllOddBits = (x & pattern) + (~pattern + 1);
+  return !isAllOddBits;
 }
-/* 
+/* REVIEW: Self-tested
  * negate - return -x 
  *   Example: negate(1) = -1.
  *   Legal ops: ! ~ & ^ | + << >>
@@ -192,10 +195,10 @@ int allOddBits(int x)
  */
 int negate(int x)
 {
-  return 2;
+  return ~x + 1;
 }
 //3
-/* 
+/* REVIEW: Self-tested
  * isAsciiDigit - return 1 if 0x30 <= x <= 0x39 (ASCII codes for characters '0' to '9')
  *   Example: isAsciiDigit(0x35) = 1.
  *            isAsciiDigit(0x3a) = 0.
@@ -206,9 +209,13 @@ int negate(int x)
  */
 int isAsciiDigit(int x)
 {
-  return 2;
+  int is0x30 = !(x + (~0x30 + 1));
+  int is0x39 = !(x + (~0x39 + 1));
+  int above0x30 = !((x + (~0x30 + 1)) & (8 << 28));
+  int below0x39 = !!((x + (~0x39 + 1)) & (8 << 28));
+  return above0x30 & below0x39 | is0x30 | is0x39;
 }
-/* 
+/* REVIEW: Self-tested
  * conditional - same as x ? y : z 
  *   Example: conditional(2,4,5) = 4
  *   Legal ops: ! ~ & ^ | + << >>
@@ -217,9 +224,13 @@ int isAsciiDigit(int x)
  */
 int conditional(int x, int y, int z)
 {
-  return 2;
+  int rf = !!(x ^ 0); // return flag: 1 for return y, 0 for return z
+  int bias = ~rf + 1;
+  int return_y = (~rf + 1) & y;
+  int return_z = (~rf) & z + ((~(~rf & z) + 1) & bias);
+  return return_y + return_z;
 }
-/* 
+/* REVIEW: Self-tested
  * isLessOrEqual - if x <= y  then return 1, else return 0 
  *   Example: isLessOrEqual(4,5) = 1.
  *   Legal ops: ! ~ & ^ | + << >>
@@ -228,7 +239,14 @@ int conditional(int x, int y, int z)
  */
 int isLessOrEqual(int x, int y)
 {
-  return 2;
+  int isEqual = !(0 ^ (x + (~y + 1)));
+  int flag = (8 << 28); // sign flag = 0x10000..00
+  int xSign = !!(x & flag);
+  int ySign = !!(y & flag);
+  int less = !(xSign + (~ySign + 1) + (~1 + 1)); // if x is neg, y is pos, return 1
+  int notGreater = !!(xSign + (~ySign + 1) + 1); // if x is pos, y is neg, return 0
+  int xisLessOrEqualy = !!((x + (~y + 1)) & flag);
+  return notGreater & (isEqual | less | xisLessOrEqualy);
 }
 //4
 /* 
@@ -308,3 +326,9 @@ unsigned floatPower2(int x)
 {
   return 2;
 }
+
+// int main(int argc, char const *argv[])
+// {
+//   int c = isLessOrEqual(0x7fffffff, 0x80000000);
+//   return 0;
+// }

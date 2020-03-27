@@ -20,6 +20,19 @@
                 "$gcc"
             ],
             "group": "build"
+        },
+        {
+            "type": "shell",
+            "label": "Make",
+            "command": [
+                "make clean",
+                "make",
+                "./btest",
+            ],
+            "options": {
+                "cwd": "/usr/bin"
+            },
+            "group": "build"
         }
     ]
 }
