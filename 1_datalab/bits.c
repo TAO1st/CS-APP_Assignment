@@ -295,22 +295,18 @@ int howManyBits(int x)
  */
 unsigned floatScale2(unsigned uf)
 {
-  unsigned sexp = (uf >> 23);
-  if (sexp == 0x7fff || sexp == 0xffff || uf == 0x0 || uf == 0x80000000)
-  {
+  unsigned exp_mask = 0x7f800000;
+  unsigned exp = (uf & exp_mask) >> 23;
+  unsigned sign_mask = uf&(1<<31);
+
+  if (exp == 0) // for denormalize value
+    return (uf << 1) | sign_mask;
+  if (exp == 0xff)  // When argument is NaN, return argument
     return uf;
-  }
-  unsigned frac = uf - (sexp << 23);
-  if (frac == 0)
-  {
-    sexp++;
-  }
-  else
-  {
-    frac = frac << 1;
-  }
-  unsigned total = (sexp << 23) + frac;
-  return total;
+  if (exp == 0xfe) // overflow to POS or NEG infinite
+    return exp_mask | sign_mask;
+  exp++;
+  return (exp << 23) | (uf & (~exp_mask)); //default case
 }
 /* 
  * floatFloat2Int - Return bit-level equivalent of expression (int) f
@@ -346,8 +342,8 @@ unsigned floatPower2(int x)
   return 2;
 }
 
-int main(int argc, char const *argv[])
-{
-  unsigned c = floatScale2(0x80800000);
-  return 0;
-}
+// int main(int argc, char const *argv[])
+// {
+//   unsigned c = floatScale2(0x3f7fffff);
+//   return 0;
+// }
