@@ -168,8 +168,8 @@ int tmin(void)
  */
 int isTmax(int x)
 {
-  int xplus1 = x+1;
-  return !(x^(~xplus1)) & !!xplus1; // !!xplus is for case: x = 0xffffffff
+  int xplus1 = x + 1;
+  return !(x ^ (~xplus1)) & !!xplus1; // !!xplus is for case: x = 0xffffffff
 }
 /* REVIEW: Self-tested
  * allOddBits - return 1 if all odd-numbered bits in word set to 1
@@ -224,11 +224,8 @@ int isAsciiDigit(int x)
  */
 int conditional(int x, int y, int z)
 {
-  int rf = !!(x ^ 0); // return flag: 1 for return y, 0 for return z
-  int bias = ~rf + 1;
-  int return_y = bias & y;
-  int return_z = (~rf) & z + ((~(~rf & z) + 1) & bias);
-  return return_y + return_z;
+  int rf = ~(!!x) + 1; // return flag: 111...111 for return y, 0 for return z
+  return (rf & y) | ((~rf) & z);
 }
 /* REVIEW: Self-tested
  * isLessOrEqual - if x <= y  then return 1, else return 0 
@@ -351,11 +348,30 @@ int floatFloat2Int(unsigned uf)
  */
 unsigned floatPower2(int x)
 {
-  return 2;
+  unsigned exp = 0x7F;
+  unsigned sign = x >> 31;
+  exp += x;
+  if (exp <= 0x0)
+  { // If the result is too small to be represented as a denorm, return 0
+    return 0;
+  }
+  if (exp >= 0xFF)
+  { // Overflow cases
+    if (!sign)
+    {
+      // If too large, return +INF.
+      return 0x7f800000;
+    }
+    else
+    { // If exp is neg and the result is too small to be represented as a denorm, return 0
+      return 0;
+    }
+  }
+  return exp << 23;
 }
 
 // int main(int argc, char const *argv[])
 // {
-//   int c = isLessOrEqual(0x80000000, 0x7fffffff);
+//   int c = floatPower2(0x80800000);
 //   return 0;
 // }
