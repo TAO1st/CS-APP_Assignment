@@ -279,10 +279,26 @@ int logicalNeg(int x)
  */
 int howManyBits(int x)
 {
-  return 0;
+  int sign = x >> 31;
+  x = (sign & ~x) | (~sign & x); // if x<0, change s to its 2's complement -1
+
+  // following process is almost the same as binary search
+
+  int f16 = !!(x >> 16) << 4;
+  x = x >> f16;
+  int f8 = !!(x >> 8) << 3;
+  x = x >> f8;
+  int f4 = !!(x >> 4) << 2;
+  x = x >> f4;
+  int f2 = !!(x >> 2) << 1;
+  x = x >> f2;
+  int f1 = !!(x >> 1);
+  x = x >> f1;
+
+  return f16 + f8 + f4 + f2 + f1 + x + 1;
 }
 //float
-/* 
+/* REVIEW: Self-tested
  * floatScale2 - Return bit-level equivalent of expression 2*f for
  *   floating point argument f.
  *   Both the argument and result are passed as unsigned int's, but
@@ -297,11 +313,11 @@ unsigned floatScale2(unsigned uf)
 {
   unsigned exp_mask = 0x7f800000;
   unsigned exp = (uf & exp_mask) >> 23;
-  unsigned sign_mask = uf&(1<<31);
+  unsigned sign_mask = uf & (1 << 31);
 
   if (exp == 0) // for denormalize value
     return (uf << 1) | sign_mask;
-  if (exp == 0xff)  // When argument is NaN, return argument
+  if (exp == 0xff) // When argument is NaN, return argument
     return uf;
   if (exp == 0xfe) // overflow to POS or NEG infinite
     return exp_mask | sign_mask;
