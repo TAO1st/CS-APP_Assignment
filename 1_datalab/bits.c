@@ -168,9 +168,8 @@ int tmin(void)
  */
 int isTmax(int x)
 {
-  int Tmax = (1 << 31) + (~1) + 1;
-  int notTmax = x ^ Tmax;
-  return !notTmax;
+  int xplus1 = x+1;
+  return !(x^(~xplus1)) & !!xplus1; // !!xplus is for case: x = 0xffffffff
 }
 /* REVIEW: Self-tested
  * allOddBits - return 1 if all odd-numbered bits in word set to 1
@@ -209,11 +208,12 @@ int negate(int x)
  */
 int isAsciiDigit(int x)
 {
-  int is0x30 = !(x + (~0x30 + 1));
-  int is0x39 = !(x + (~0x39 + 1));
-  int above0x30 = !((x + (~0x30 + 1)) & (8 << 28));
-  int below0x39 = !!((x + (~0x39 + 1)) & (8 << 28));
-  return above0x30 & below0x39 | is0x30 | is0x39;
+  int not0x30 = x + (~0x30 + 1); // x>=0x30
+  int not0x39 = x + (~0x39);     // x<0x40
+  int mask = 8 << 28;
+  int above0x30 = !(not0x30 & mask);
+  int below0x39 = !!(not0x39 & mask);
+  return above0x30 & below0x39;
 }
 /* REVIEW: Self-tested
  * conditional - same as x ? y : z 
@@ -226,7 +226,7 @@ int conditional(int x, int y, int z)
 {
   int rf = !!(x ^ 0); // return flag: 1 for return y, 0 for return z
   int bias = ~rf + 1;
-  int return_y = (~rf + 1) & y;
+  int return_y = bias & y;
   int return_z = (~rf) & z + ((~(~rf & z) + 1) & bias);
   return return_y + return_z;
 }
@@ -239,14 +239,12 @@ int conditional(int x, int y, int z)
  */
 int isLessOrEqual(int x, int y)
 {
-  int isEqual = !(0 ^ (x + (~y + 1)));
-  int flag = (8 << 28); // sign flag = 0x10000..00
-  int xSign = !!(x & flag);
-  int ySign = !!(y & flag);
-  int less = !(xSign + (~ySign + 1) + (~1 + 1)); // if x is neg, y is pos, return 1
-  int notGreater = !!(xSign + (~ySign + 1) + 1); // if x is pos, y is neg, return 0
-  int xisLessOrEqualy = !!((x + (~y + 1)) & flag);
-  return notGreater & (isEqual | less | xisLessOrEqualy);
+  int xsign = !!(x >> 31);
+  int ysign = !!(y >> 31);
+  int flag = xsign ^ ysign; // 1 for different flags, 0 for the same flags
+  int diffFlag = flag & xsign;
+  int sameFlag = (!flag) & !((y + (~x + 1)) >> 31);
+  return diffFlag | sameFlag;
 }
 //4
 /* REVIEW: Self-tested
@@ -259,8 +257,7 @@ int isLessOrEqual(int x, int y)
  */
 int logicalNeg(int x)
 {
-  int flag = (8 << 28);                 // sign flag = 0x10000..00
-  int xSign = !!(x & flag);             // handle 0x80000000 case
+  int xSign = x >> 31;                  // handle 0x80000000 case
   int toLogical = ((~x + 1) ^ x) >> 31; // if x = 0, toLogical = 0; else, toLogical = 1
 
   return (~xSign) & (toLogical + 1); // (~xSign)&(~toLogical+2);
@@ -283,7 +280,6 @@ int howManyBits(int x)
   x = (sign & ~x) | (~sign & x); // if x<0, change s to its 2's complement -1
 
   // following process is almost the same as binary search
-
   int f16 = !!(x >> 16) << 4;
   x = x >> f16;
   int f8 = !!(x >> 8) << 3;
@@ -294,9 +290,9 @@ int howManyBits(int x)
   x = x >> f2;
   int f1 = !!(x >> 1);
   x = x >> f1;
-
   return f16 + f8 + f4 + f2 + f1 + x + 1;
 }
+
 //float
 /* REVIEW: Self-tested
  * floatScale2 - Return bit-level equivalent of expression 2*f for
@@ -338,7 +334,7 @@ unsigned floatScale2(unsigned uf)
  */
 int floatFloat2Int(unsigned uf)
 {
-  return 2;
+  return 0;
 }
 /* 
  * floatPower2 - Return bit-level equivalent of the expression 2.0^x
@@ -360,6 +356,6 @@ unsigned floatPower2(int x)
 
 // int main(int argc, char const *argv[])
 // {
-//   unsigned c = floatScale2(0x3f7fffff);
+//   int c = isLessOrEqual(0x80000000, 0x7fffffff);
 //   return 0;
 // }
