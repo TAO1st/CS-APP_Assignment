@@ -135,7 +135,7 @@ NOTES:
  */
 
 #endif
-//1 REVIEW: Self-tested
+//1
 /* 
  * bitXor - x^y using only ~ and & 
  *   Example: bitXor(4, 5) = 1
@@ -147,7 +147,7 @@ int bitXor(int x, int y)
 {
   return ~(~(~x & y) & ~(x & ~y));
 }
-/* REVIEW: Self-tested
+/* 
  * tmin - return minimum two's complement integer 
  *   Legal ops: ! ~ & ^ | + << >>
  *   Max ops: 4
@@ -159,7 +159,7 @@ int tmin(void)
   return ~(1 << 31) + 1;
 }
 //2
-/* REVIEW: Self-tested
+/* 
  * isTmax - returns 1 if x is the maximum, two's complement number,
  *     and 0 otherwise 
  *   Legal ops: ! ~ & ^ | +
@@ -171,7 +171,7 @@ int isTmax(int x)
   int xplus1 = x + 1;
   return !(x ^ (~xplus1)) & !!xplus1; // !!xplus is for case: x = 0xffffffff
 }
-/* REVIEW: Self-tested
+/* 
  * allOddBits - return 1 if all odd-numbered bits in word set to 1
  *   where bits are numbered from 0 (least significant) to 31 (most significant)
  *   Examples allOddBits(0xFFFFFFFD) = 0, allOddBits(0xAAAAAAAA) = 1
@@ -185,7 +185,7 @@ int allOddBits(int x)
   int isAllOddBits = (x & pattern) + (~pattern + 1);
   return !isAllOddBits;
 }
-/* REVIEW: Self-tested
+/* 
  * negate - return -x 
  *   Example: negate(1) = -1.
  *   Legal ops: ! ~ & ^ | + << >>
@@ -197,7 +197,7 @@ int negate(int x)
   return ~x + 1;
 }
 //3
-/* REVIEW: Self-tested
+/* 
  * isAsciiDigit - return 1 if 0x30 <= x <= 0x39 (ASCII codes for characters '0' to '9')
  *   Example: isAsciiDigit(0x35) = 1.
  *            isAsciiDigit(0x3a) = 0.
@@ -215,7 +215,7 @@ int isAsciiDigit(int x)
   int below0x39 = !!(not0x39 & mask);
   return above0x30 & below0x39;
 }
-/* REVIEW: Self-tested
+/* 
  * conditional - same as x ? y : z 
  *   Example: conditional(2,4,5) = 4
  *   Legal ops: ! ~ & ^ | + << >>
@@ -227,7 +227,7 @@ int conditional(int x, int y, int z)
   int rf = ~(!!x) + 1; // return flag: 111...111 for return y, 0 for return z
   return (rf & y) | ((~rf) & z);
 }
-/* REVIEW: Self-tested
+/* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
  *   Example: isLessOrEqual(4,5) = 1.
  *   Legal ops: ! ~ & ^ | + << >>
@@ -244,7 +244,7 @@ int isLessOrEqual(int x, int y)
   return diffFlag | sameFlag;
 }
 //4
-/* REVIEW: Self-tested
+/* 
  * logicalNeg - implement the ! operator, using all of 
  *              the legal operators except !
  *   Examples: logicalNeg(3) = 0, logicalNeg(0) = 1
@@ -278,20 +278,20 @@ int howManyBits(int x)
 
   // following process is almost the same as binary search
   int f16 = !!(x >> 16) << 4;
-  x = x >> f16;
+  x >>= f16;
   int f8 = !!(x >> 8) << 3;
-  x = x >> f8;
+  x >>= f8;
   int f4 = !!(x >> 4) << 2;
-  x = x >> f4;
+  x >>= f4;
   int f2 = !!(x >> 2) << 1;
-  x = x >> f2;
+  x >>= f2;
   int f1 = !!(x >> 1);
-  x = x >> f1;
+  x >>= f1;
   return f16 + f8 + f4 + f2 + f1 + x + 1;
 }
 
 //float
-/* REVIEW: Self-tested
+/* 
  * floatScale2 - Return bit-level equivalent of expression 2*f for
  *   floating point argument f.
  *   Both the argument and result are passed as unsigned int's, but
@@ -331,7 +331,47 @@ unsigned floatScale2(unsigned uf)
  */
 int floatFloat2Int(unsigned uf)
 {
-  return 0;
+  unsigned exp_mask = 0x7f800000;
+  unsigned exp = (uf & exp_mask) >> 23; // exponent with 127 bias
+  unsigned sign = uf >> 31;
+  int E = exp - 127;                            // exponent
+  unsigned frac = uf & 0x007fffff | 0x00800000; // 0x00800000 is for adding implied leading 1
+
+  if (E < 0)
+  {
+    // decimal is too small, so cast to 0
+    return 0;
+  }
+  if (E > 31)
+  {
+    // out of range (including NaN and infinity)
+    return 0x80000000u;
+  }
+  if (E > 23)
+  {
+    frac <<= (E - 23);
+  }
+  else
+  {
+    frac >>= (23 - E);
+  }
+
+  // check the output sign
+  if (!(((frac >> 31) ^ sign)))
+  {
+    // sign is same with before
+    return frac;
+  }
+  else if (frac >> 31)
+  {
+    // sign is different from before, overflow
+    return 0x80000000;
+  }
+  else
+  {
+    // sign is different from before, get the 2's complements
+    return ~frac + 1;
+  }
 }
 /* 
  * floatPower2 - Return bit-level equivalent of the expression 2.0^x
@@ -369,9 +409,3 @@ unsigned floatPower2(int x)
   }
   return exp << 23;
 }
-
-// int main(int argc, char const *argv[])
-// {
-//   int c = floatPower2(0x80800000);
-//   return 0;
-// }
