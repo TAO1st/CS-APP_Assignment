@@ -16,7 +16,7 @@ stages:
 
 jobs:
   allow_failures:
-    - if: stage = compliance
+    - if: branch = master
   include:
     - stage: compliance
       script: ./dlc bits.c
