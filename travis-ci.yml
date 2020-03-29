@@ -1,0 +1,83 @@
+language: c
+
+before_install:
+  - eval "${MATRIX_EVAL}"
+
+after_success:
+  - make clean
+  - bash <(curl -s https://codecov.io/bash)
+
+stages:
+  - build
+  - compliance
+  - grade
+
+jobs:
+  include:
+    - stage: build
+      script:
+        - cd 1_datalab
+        - make clean
+        - make
+    - stage: compliance
+      script: ./dlc bits.c
+    - stage: grade
+      script: ./btest
+
+matrix:
+  include:
+    # works on Precise and Trusty
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - george-edison55-precise-backports
+          packages:
+            - g++-4.9
+            - cmake-data
+            - cmake
+      env:
+        - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+
+    # works on Precise and Trusty
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - george-edison55-precise-backports
+          packages:
+            - g++-5
+            - cmake-data
+            - cmake
+      env:
+        - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+
+    # works on Precise and Trusty
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - george-edison55-precise-backports
+          packages:
+            - g++-6
+            - cmake-data
+            - cmake
+      env:
+        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+
+    # works on Precise and Trusty
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - george-edison55-precise-backports
+          packages:
+            - g++-7
+            - cmake-data
+            - cmake
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
