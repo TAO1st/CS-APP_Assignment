@@ -1,20 +1,21 @@
 language: c
 
+before_script:
+  - gcc --version
+  - cd 1_datalab
+  - make clean
+  - make
+
 after_success:
   - bash <(curl -s https://codecov.io/bash)
+  - make clean
 
 stages:
-  - build
   - compliance
   - grade
 
 jobs:
   include:
-    - stage: build
-      script:
-        - cd 1_datalab
-        - make clean
-        - make
     - stage: compliance
       script: ./dlc bits.c
     - stage: grade
