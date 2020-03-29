@@ -7,16 +7,24 @@ before_script:
   - make
 
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
   - make clean
 
 stages:
   - compliance
   - grade
+  - coverage
 
 jobs:
+  allow_failures:
+    - if: stage = compliance
   include:
     - stage: compliance
       script: ./dlc bits.c
     - stage: grade
       script: ./btest
+    - stage: coverage
+      script:
+        - clang -coverage -O0 btest.c -o btest
+        - ./btest
+        - gcov btest.c
+        - bash <(curl -s https://codecov.io/bash)
