@@ -1,11 +1,7 @@
 language: c
 
-before_install:
-  - eval "${MATRIX_EVAL}"
-
 after_success:
   - bash <(curl -s https://codecov.io/bash)
-  - make clean
 
 stages:
   - build
