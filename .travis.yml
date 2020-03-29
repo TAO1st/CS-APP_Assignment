@@ -18,13 +18,11 @@ jobs:
   allow_failures:
     - if: branch = master
   include:
-    - stage: compliance
-      script: ./dlc bits.c
     - stage: grade
       script: ./btest
     - stage: coverage
       script:
-        - clang -coverage -O0 btest.c -o btest
+        - gcc -coverage -O0 -Wall -lm -o btest bits.c btest.c decl.c tests.c
         - ./btest
         - gcov btest.c
         - bash <(curl -s https://codecov.io/bash)
