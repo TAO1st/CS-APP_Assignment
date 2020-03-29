@@ -23,5 +23,5 @@ jobs:
       script:
         - gcc -coverage -O0 -Wall -lm -o btest bits.c btest.c decl.c tests.c
         - ./btest
-        - gcov btest.c
+        - gcov bits.c
         - bash <(curl -s https://codecov.io/bash)
