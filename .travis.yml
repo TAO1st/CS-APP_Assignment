@@ -1,0 +1,27 @@
+language: c
+
+before_script:
+  - gcc --version
+  - cd 1_datalab
+  - make clean
+  - make
+
+after_success:
+  - make clean
+
+stages:
+  - grade
+  - coverage
+
+jobs:
+  allow_failures:
+    - if: branch = master
+  include:
+    - stage: grade
+      script: ./btest
+    - stage: coverage
+      script:
+        - gcc -coverage -O0 -Wall -lm -o btest bits.c btest.c decl.c tests.c
+        - ./btest
+        - gcov bits.c
+        - bash <(curl -s https://codecov.io/bash)
