@@ -1,0 +1,6 @@
+11 11 11 11 11 11 11 11     /* normal content */
+22 22 22 22 22 22 22 22     /* normal content */
+33 33 33 33 33 33 33 33     /* normal content */
+44 44 44 44 44 44 44 44     /* normal content */
+55 55 55 55 55 55 55 55     /* normal content */
+f5 18 40 00 00 00 00 00     /* return address: 0x4018f5 */

