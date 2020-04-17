@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <getopt.h>
 #include <math.h>
+#include <string.h>
 
 struct cache_line
 {
@@ -45,13 +46,14 @@ struct cache_sim
     struct cache_set **cache;
 };
 
+void alloc_cache(struct cache_sim *csim);
 void print_help(void);
+void add_cline(struct cache_set *cset);
+void simulate(struct cache_sim *csim);
 int is_arg_valid(struct cache_sim *csim);
 struct cache_sim *new_csim(void);
 struct cache_sim *cache_init(int argc, char *argv[]);
 struct cache_set *new_cset(int E);
-void add_cline(struct cache_set *cset);
-void simulate(struct cache_sim *csim);
 
 int main(int argc, char *argv[])
 {
