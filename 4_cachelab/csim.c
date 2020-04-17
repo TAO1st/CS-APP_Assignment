@@ -180,7 +180,7 @@ void simulate(struct cache_sim *csim)
     while (fscanf(f, " %c %lx,%d\n", &type, &addr, &size) > 0)
     {
         if (verbose && type != 'I')
-            printf("%c %lx,%d", type, addr, size);
+            printf("%c %lx, %d", type, addr, size);
         switch (type)
         {
         case 'L':
@@ -208,7 +208,7 @@ void cache_access(struct cache_sim *csim, __uint64_t addr, int size)
     int s = csim->s;
     int b = csim->b;
     int verbose = csim->verbose;
-    __uint64_t ci_mask = (1 << (s + 1)) - 1;
+    __uint64_t ci_mask = (1 << s) - 1;
     __uint64_t ci = (addr >> b) & ci_mask;
     __uint64_t ct = addr >> (s + b);
     struct cache_set *cset = csim->cache[ci];
