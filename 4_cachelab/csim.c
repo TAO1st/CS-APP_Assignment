@@ -146,6 +146,8 @@ void simulate(struct cache_sim *csim)
 
     while (fscanf(f, " %c %llx,%d\n", &type, &addr, &size) > 0)
     {
+        if (verbose && type != 'I')
+            printf("%c %llx,%d", type, addr, size);
         switch (type)
         {
         case 'L':
