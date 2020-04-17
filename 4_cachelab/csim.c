@@ -56,9 +56,10 @@ void cache_access(struct cache_sim *csim, __uint64_t addr, int size);
 void prepend_line(struct cache_set *cset, struct cache_line *cline);
 void remove_line(struct cache_line *cline);
 int is_arg_valid(struct cache_sim *csim);
-struct cache_line *find_cline(struct cache_set *cset, __uint64_t ct);
 struct cache_sim *new_csim(void);
 struct cache_sim *cache_init(int argc, char *argv[]);
+struct cache_line *find_cline(struct cache_set *cset, __uint64_t ct);
+struct cache_line *get_cline(struct cache_set *cset, __uint64_t ct);
 struct cache_set *new_cset(int E);
 
 int main(int argc, char *argv[])
@@ -128,9 +129,9 @@ struct cache_set *new_cset(int E)
 
 void add_cline(struct cache_set *cset)
 {
-    struct cache_line *this_line = (struct cache_line *)malloc(sizeof(struct cache_line));
-    this_line->valid = 0;
-    prepend_line(cset, this_line);
+    struct cache_line *curr_line = (struct cache_line *)malloc(sizeof(struct cache_line));
+    curr_line->valid = 0;
+    prepend_line(cset, curr_line);
 }
 
 /* 
@@ -224,11 +225,17 @@ void cache_access(struct cache_sim *csim, __uint64_t addr, int size)
 
         (csim->hit_count)++;
     }
+    else
+    {
+        if (verbose)
+            printf(" miss");
+        // TODO:
+    }
 }
 
 /*
- * return cache line in a given cache set
- * return NULL if not find or not valid
+ * return valid cache line in a given cache set
+ * return NULL if not find or cache line not valid
  */
 struct cache_line *find_cline(struct cache_set *cset, __uint64_t ct)
 {
@@ -243,6 +250,27 @@ struct cache_line *find_cline(struct cache_set *cset, __uint64_t ct)
         curr_line = curr_line->next;
     }
 
+    return NULL;
+}
+
+/*
+ * return an unused(invalid) line for miss case
+ */
+struct cache_line *get_cline(struct cache_set *cset, __uint64_t ct)
+{
+    struct cache_line *curr_line = cset->head->next;
+    struct cache_line *tail = cset->tail;
+
+    while (curr_line != tail)
+    {
+        // return an unused(invalid) line
+        // so that data in valid lines won't lose
+        if (!curr_line->valid)
+        {
+            return curr_line;
+        }
+        curr_line = curr_line->next; // find the next unused line
+    }
     return NULL;
 }
 
