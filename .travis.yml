@@ -10,11 +10,10 @@ stages:
   - 1_autograding
   - 1_coverage
   - 4_build
+  - 4_leak_check
   - 4_autograding
 
 jobs:
-  allow_failures:
-    - if: branch = master
   include:
     - stage: 1_autograding
       script: 
@@ -36,9 +35,16 @@ jobs:
         - cd 4_cachelab
         - make clean
         - make
+    - stage: 4_leak_check
+      script:
+        - cd 4_cachelab
+        - make clean
+        - make
+        - valgrind --leak-resolution=high --leak-check=full --show-reachable=yes --track-fds=yes ./csim -v -s 3 -E 8 -b 2 -t "traces/dave.trace"
     - stage: 4_autograding
       script:
         - cd 4_cachelab
         - make clean
         - make
         - ./test-csim
+    
