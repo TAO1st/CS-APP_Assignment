@@ -52,6 +52,8 @@ void alloc_cache(struct cache_sim *csim);
 void print_help(void);
 void add_cline(struct cache_set *cset);
 void simulate(struct cache_sim *csim);
+void cache_access(struct cache_sim *csim, __uint64_t addr, int size);
+void prepend_line(struct cache_set *cset, struct cache_line *cline);
 int is_arg_valid(struct cache_sim *csim);
 struct cache_line *find_cline(struct cache_set *cset, __uint64_t ct);
 struct cache_sim *new_csim(void);
@@ -86,10 +88,12 @@ void alloc_cache(struct cache_sim *csim)
     struct cache_set **cache = (struct cache_set **)malloc(sizeof(struct cache_set *) * S);
 
     // allocate space for cache lines
-    for (int i = 0; i < E; i++)
+    for (int i = 0; i < S; i++)
     {
-        cache[i] = (struct cache_set *)malloc(sizeof(struct cache_line *) * E);
+        cache[i] = new_cset(E);
     }
+
+    csim->cache = cache;
 }
 
 /* Return new cache set with E lines.
@@ -125,9 +129,22 @@ void add_cline(struct cache_set *cset)
 {
     struct cache_line *this_line = (struct cache_line *)malloc(sizeof(struct cache_line));
     this_line->valid = 0;
-    this_line->prev = cset->head;
-    this_line->next = cset->head->next;
-    cset->head->next = this_line;
+    prepend_line(cset, this_line);
+}
+
+/* 
+ * add an empty cline to the beginning of the given cache_set
+ */
+void prepend_line(struct cache_set *cset, struct cache_line *cline)
+{
+    struct cache_line *head = cset->head;
+    struct cache_line *head_next = head->next;
+
+    cline->prev = head;
+    cline->next = head_next;
+
+    head->next = cline;
+    head_next->prev = cline;
 }
 
 struct cache_sim *new_csim(void)
@@ -147,18 +164,20 @@ void simulate(struct cache_sim *csim)
 
     f = fopen(csim->trace_file, "r");
 
-    while (fscanf(f, " %c %llx,%d\n", &type, &addr, &size) > 0)
+    while (fscanf(f, " %c %lx,%d\n", &type, &addr, &size) > 0)
     {
         if (verbose && type != 'I')
-            printf("%c %llx,%d", type, addr, size);
+            printf("%c %lx,%d", type, addr, size);
         switch (type)
         {
-        case 'L':
         case 'S':
-            //TODO: do sth with csim,addr, size;
+            // a data store
+            cache_access(csim, addr, size);
             break;
         case 'M':
-            //TODO: do sth with csim,addr, size;
+            // a data modify
+            cache_access(csim, addr, size); // a data load
+            cache_access(csim, addr, size); // followed by a data store
             break;
         }
         if (verbose)
@@ -167,6 +186,30 @@ void simulate(struct cache_sim *csim)
     fclose(f);
 }
 
+/*
+ * simulate the process of accesing cache memory
+ */
+void cache_access(struct cache_sim *csim, __uint64_t addr, int size)
+{
+    int s = csim->s;
+    int b = csim->b;
+    int verbose = csim->verbose;
+    __uint64_t ci_mask = (1 << (s + 1)) - 1;
+    __uint64_t ci = (addr >> b) & ci_mask;
+    __uint64_t ct = addr >> (s + b);
+    struct cache_set *cset = csim->cache[ci];
+    struct cache_line *cline = find_cline(cset, ct);
+    if (cline)
+    {
+        if (verbose)
+            printf(" hit");
+
+        // unlink_line(cline);
+        // prepend_line(cset, cline);
+
+        (csim->hit_count)++;
+    }
+}
 
 /*
  * return cache line in a given cache set
