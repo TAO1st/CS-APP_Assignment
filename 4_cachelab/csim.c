@@ -33,9 +33,9 @@ struct cache_set
 struct cache_sim
 {
     int verbose;
-    int s;
-    int E;
-    int b;
+    int s; // 2^s cache sets in cache_sim
+    int E; // E cache lines in each of the cache sets
+    int b; // 2^b bytes block each line
     char *trace_file;
 
     int hit_count;
@@ -46,14 +46,20 @@ struct cache_sim
 };
 
 void print_help(void);
+int is_arg_valid(struct cache_sim *csim);
 struct cache_sim *new_csim(void);
 struct cache_sim *cache_init(int argc, char *argv[]);
+struct cache_set *new_cset(int E);
+void add_cline(struct cache_set *cset);
 
 int main(int argc, char *argv[])
 {
     struct cache_sim *csim;
 
     csim = cache_init(argc, argv);
+    if (is_arg_valid(csim))
+    {
+    }
 
     if (csim->verbose)
     {
@@ -62,6 +68,58 @@ int main(int argc, char *argv[])
 
     printSummary(csim->hit_count, csim->miss_count, csim->eviction_count);
     return 0;
+}
+
+int is_arg_valid(struct cache_sim *csim)
+{
+    return csim->s > 0 && csim->E > 0 && csim->b > 0 && csim->trace_file;
+}
+
+void alloc_cache(struct cache_sim *csim)
+{
+    int S = 1 << (csim->s); // S = 2^s cache sets in cache_sim
+    int E = csim->E;        // E cache lines in each of the cache sets
+    struct cache_set **cache = (struct cache_set **)malloc(sizeof(struct cache_set *) * S);
+
+    // allocate space for cache lines
+    for (int i = 0; i < E; i++)
+    {
+        cache[i] = (struct cache_set *)malloc(sizeof(struct cache_line *) * E);
+    }
+}
+
+/* Return new cache set with E lines.
+ * If E<0, then print error and return null */
+struct cache_set *new_cset(int E)
+{
+    if (E < 0)
+    {
+        printf("Illegal argument");
+        return NULL;
+    }
+    int i;
+    struct cache_set *cset = (struct cache_set *)malloc(sizeof(struct cache_set));
+    struct cache_line *head = (struct cache_line *)malloc(sizeof(struct cache_line));
+    struct cache_line *tail = (struct cache_line *)malloc(sizeof(struct cache_line));
+
+    head->prev = NULL;
+    head->next = tail;
+
+    tail->prev = head;
+    tail->next = NULL;
+
+    cset->E = E;
+    cset->head = head;
+    cset->tail = tail;
+
+    for (i = 0; i < E; i++)
+        add_cline(cset);
+
+    return cset;
+}
+
+void add_cline(struct cache_set *cset){
+
 }
 
 struct cache_sim *new_csim(void)
@@ -100,10 +158,6 @@ struct cache_sim *cache_init(int argc, char *argv[])
             break;
         }
     }
-
-    // csim->hit_count = 0;
-    // csim->miss_count = 0;
-    // csim->eviction_count = 0;
 
     return csim;
 }
