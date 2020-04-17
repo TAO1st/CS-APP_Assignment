@@ -114,12 +114,16 @@ struct cache_set *new_cset(int E)
 
     for (i = 0; i < E; i++)
         add_cline(cset);
-
     return cset;
 }
 
-void add_cline(struct cache_set *cset){
-
+void add_cline(struct cache_set *cset)
+{
+    struct cache_line *this_line = (struct cache_line *)malloc(sizeof(struct cache_line));
+    this_line->valid = 0;
+    this_line->prev = cset->head;
+    this_line->next = cset->head->next;
+    cset->head->next = this_line;
 }
 
 struct cache_sim *new_csim(void)
