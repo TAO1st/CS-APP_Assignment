@@ -9,6 +9,7 @@ after_success:
 stages:
   - 1_autograding
   - 1_coverage
+  - 4_build
   - 4_autograding
 
 jobs:
