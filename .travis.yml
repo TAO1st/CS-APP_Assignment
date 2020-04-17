@@ -2,26 +2,42 @@ language: c
 
 before_script:
   - gcc --version
-  - cd 1_datalab
-  - make clean
-  - make
 
 after_success:
   - make clean
 
 stages:
-  - grade
-  - coverage
+  - 1_autograding
+  - 1_coverage
+  - 4_autograding
 
 jobs:
   allow_failures:
     - if: branch = master
   include:
-    - stage: grade
-      script: ./btest
-    - stage: coverage
+    - stage: 1_autograding
+      script: 
+        - cd 1_datalab
+        - make clean
+        - make
+        - ./btest
+    - stage: 1_coverage
       script:
+        - cd 1_datalab
+        - make clean
+        - make
         - gcc -coverage -O0 -Wall -lm -o btest bits.c btest.c decl.c tests.c
         - ./btest
         - gcov bits.c
         - bash <(curl -s https://codecov.io/bash)
+    - stage: 4_build
+      script:
+        - cd 4_cachelab
+        - make clean
+        - make
+    - stage: 4_autograding
+      script:
+        - cd 4_cachelab
+        - make clean
+        - make
+        - ./test-csim
