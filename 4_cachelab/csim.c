@@ -1,16 +1,17 @@
 #include "cachelab.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <getopt.h>
 
 int main(int argc, char *argv[])
 {
     extern char *optarg;
-    extern int optind, opterr, optopt;
 
     int verbose = 0;
-    int n = 0;
     int s = 0;
     int E = 0;
     int b = 0;
-    char fileName[10];
+    char *fileName = NULL;
     char opt;
 
     while ((opt = getopt(argc, argv, "hvs:E:b:t:")) != -1)
@@ -27,18 +28,18 @@ int main(int argc, char *argv[])
             break;
         case 'b':
             b = atoi(optarg);
+            break;
         case 't':
-            *fileName = optarg;
+            fileName = optarg;
+            break;
         case 'h':
             printf("usage: hvs:E:b:t:");
             exit(1);
         }
     }
-    int i;
-    for (i = 0; i < n; i++)
+    if (verbose)
     {
-        if (verbose)
-            printf("%d\n", i);
+        printf("%d %d %d %s\n", s, E, b, fileName);
     }
 
     printSummary(0, 0, 0);
