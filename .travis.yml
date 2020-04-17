@@ -40,10 +40,10 @@ jobs:
         - cd 4_cachelab
         - make clean
         - make
+        - sudo apt-get install valgrind
         - valgrind --leak-resolution=high --leak-check=full --show-reachable=yes --track-fds=yes ./csim -v -s 3 -E 8 -b 2 -t "traces/dave.trace"
     - stage: 4_autograding
       script:
-        - sudo apt-get install valgrind
         - cd 4_cachelab
         - make clean
         - make
