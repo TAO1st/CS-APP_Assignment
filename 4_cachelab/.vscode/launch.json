@@ -12,13 +12,13 @@
             "args": [
                 "-v",
                 "-s",
-                "3",
+                "4",
                 "-E",
-                "8",
+                "1",
                 "-b",
-                "2",
+                "4",
                 "-t",
-                "traces/dave.trace"
+                "traces/yi.trace"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
