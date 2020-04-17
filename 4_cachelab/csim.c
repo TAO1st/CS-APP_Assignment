@@ -15,6 +15,8 @@
 #include <math.h>
 #include <string.h>
 
+#define m 64 // the address field specifies a 64-bit hex memory
+
 struct cache_line
 {
     int valid;
@@ -51,6 +53,7 @@ void print_help(void);
 void add_cline(struct cache_set *cset);
 void simulate(struct cache_sim *csim);
 int is_arg_valid(struct cache_sim *csim);
+struct cache_line *find_cline(struct cache_set *cset, __uint64_t ct);
 struct cache_sim *new_csim(void);
 struct cache_sim *cache_init(int argc, char *argv[]);
 struct cache_set *new_cset(int E);
@@ -137,7 +140,7 @@ struct cache_sim *new_csim(void)
 void simulate(struct cache_sim *csim)
 {
     FILE *f;
-    unsigned long long addr;
+    __uint64_t addr;
     int size;
     int verbose = csim->verbose;
     char type;
@@ -162,6 +165,27 @@ void simulate(struct cache_sim *csim)
             printf("\n");
     }
     fclose(f);
+}
+
+
+/*
+ * return cache line in a given cache set
+ * return NULL if not find or not valid
+ */
+struct cache_line *find_cline(struct cache_set *cset, __uint64_t ct)
+{
+    struct cache_line *curr_line = cset->head->next;
+    struct cache_line *tail = cset->tail;
+
+    while (curr_line != tail)
+    {
+        if (curr_line->valid && curr_line->tag == ct)
+            return curr_line;
+
+        curr_line = curr_line->next;
+    }
+
+    return NULL;
 }
 
 struct cache_sim *cache_init(int argc, char *argv[])
