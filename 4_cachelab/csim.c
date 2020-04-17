@@ -51,6 +51,7 @@ struct cache_sim *new_csim(void);
 struct cache_sim *cache_init(int argc, char *argv[]);
 struct cache_set *new_cset(int E);
 void add_cline(struct cache_set *cset);
+void simulate(struct cache_sim *csim);
 
 int main(int argc, char *argv[])
 {
@@ -59,12 +60,10 @@ int main(int argc, char *argv[])
     csim = cache_init(argc, argv);
     if (is_arg_valid(csim))
     {
+        alloc_cache(csim);
     }
 
-    if (csim->verbose)
-    {
-        printf("%s", csim->trace_file);
-    }
+    simulate(csim);
 
     printSummary(csim->hit_count, csim->miss_count, csim->eviction_count);
     return 0;
@@ -133,11 +132,40 @@ struct cache_sim *new_csim(void)
     return csim;
 }
 
+void simulate(struct cache_sim *csim)
+{
+    FILE *f;
+    unsigned long long addr;
+    int size;
+    int verbose = csim->verbose;
+    char type;
+
+    f = fopen(csim->trace_file, "r");
+
+    while (fscanf(f, " %c %llx,%d\n", &type, &addr, &size) > 0)
+    {
+        switch (type)
+        {
+        case 'L':
+        case 'S':
+            //TODO: do sth with csim,addr, size;
+            break;
+        case 'M':
+            //TODO: do sth with csim,addr, size;
+            break;
+        }
+        if (verbose)
+            printf("\n");
+    }
+    fclose(f);
+}
+
 struct cache_sim *cache_init(int argc, char *argv[])
 {
     struct cache_sim *csim = new_csim();
     extern char *optarg;
     char opt;
+    char *trace_name;
 
     while ((opt = getopt(argc, argv, "hvs:E:b:t:")) != -1)
     {
@@ -158,6 +186,8 @@ struct cache_sim *cache_init(int argc, char *argv[])
             csim->b = atoi(optarg);
             break;
         case 't':
+            trace_name = malloc(strlen(optarg) + 1);
+            strcpy(trace_name, optarg);
             csim->trace_file = optarg;
             break;
         }
