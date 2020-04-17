@@ -226,10 +226,32 @@ void cache_access(struct cache_sim *csim, __uint64_t addr, int size)
         (csim->hit_count)++;
     }
     else
-    {
+    { // if it's not a hit, then it's a miss
+        (csim->miss_count)++;
         if (verbose)
             printf(" miss");
-        // TODO:
+
+        // cache current line
+        cline = get_cline(cset, ct);
+
+        // Eviction when cline is NULL(cache memory is full)
+        if (!cline)
+        {
+            if (verbose)
+                printf(" eviction");
+
+            cline = cset->tail->prev;
+            (csim->eviction_count)++;
+        }
+
+        // write cache info to new cache line
+        cline->valid = 1;
+        cline->tag = ct;
+
+        // first remove then prepend, so the used cline will always at
+        // the beginning of cset, which is the last one for evictions
+        remove_line(cline);
+        prepend_line(cset, cline);
     }
 }
 
