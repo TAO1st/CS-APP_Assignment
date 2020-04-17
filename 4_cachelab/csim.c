@@ -1,3 +1,13 @@
+/* 
+ * This file is a cache simulator that takes a valgrind memory trace as input, 
+ * simulates the hit/miss behavior of a cache memory on this trace, and outputs 
+ * the total number of hits, misses, and evictions.
+ * 
+ * @author Li Li
+ * @E-mail Lil147@pitt.edu
+ * @date April 17, 2020
+ */
+
 #include "cachelab.h"
 #include <stdlib.h>
 #include <stdio.h>
