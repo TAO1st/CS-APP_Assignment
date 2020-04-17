@@ -54,6 +54,7 @@ void add_cline(struct cache_set *cset);
 void simulate(struct cache_sim *csim);
 void cache_access(struct cache_sim *csim, __uint64_t addr, int size);
 void prepend_line(struct cache_set *cset, struct cache_line *cline);
+void remove_line(struct cache_line *cline);
 int is_arg_valid(struct cache_sim *csim);
 struct cache_line *find_cline(struct cache_set *cset, __uint64_t ct);
 struct cache_sim *new_csim(void);
@@ -147,6 +148,17 @@ void prepend_line(struct cache_set *cset, struct cache_line *cline)
     head_next->prev = cline;
 }
 
+/* 
+ * remove a given cline when the cset is not NULL
+ */
+void remove_line(struct cache_line *cline)
+{
+    struct cache_line *next_cline = cline->next;
+    struct cache_line *prev_cline = cline->prev;
+    prev_cline->next = next_cline;
+    next_cline->prev = prev_cline;
+}
+
 struct cache_sim *new_csim(void)
 {
     struct cache_sim *csim = malloc(sizeof(struct cache_sim));
@@ -170,6 +182,7 @@ void simulate(struct cache_sim *csim)
             printf("%c %lx,%d", type, addr, size);
         switch (type)
         {
+        case 'L':
         case 'S':
             // a data store
             cache_access(csim, addr, size);
@@ -204,8 +217,10 @@ void cache_access(struct cache_sim *csim, __uint64_t addr, int size)
         if (verbose)
             printf(" hit");
 
-        // unlink_line(cline);
-        // prepend_line(cset, cline);
+        // first remove then prepend, so the used cline will always at
+        // the beginning of cset, which is the last one for evictions
+        remove_line(cline);
+        prepend_line(cset, cline);
 
         (csim->hit_count)++;
     }
