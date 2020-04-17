@@ -15,8 +15,6 @@
 #include <math.h>
 #include <string.h>
 
-#define m 64 // the address field specifies a 64-bit hex memory
-
 struct cache_line
 {
     int valid;
@@ -55,6 +53,8 @@ void simulate(struct cache_sim *csim);
 void cache_access(struct cache_sim *csim, __uint64_t addr, int size);
 void prepend_line(struct cache_set *cset, struct cache_line *cline);
 void remove_line(struct cache_line *cline);
+void free_csim(struct cache_sim *csim);
+void free_cset(struct cache_set *cset);
 int is_arg_valid(struct cache_sim *csim);
 struct cache_sim *new_csim(void);
 struct cache_sim *cache_init(int argc, char *argv[]);
@@ -73,8 +73,9 @@ int main(int argc, char *argv[])
     }
 
     simulate(csim);
-
     printSummary(csim->hit_count, csim->miss_count, csim->eviction_count);
+
+    free_csim(csim);
     return 0;
 }
 
@@ -99,7 +100,8 @@ void alloc_cache(struct cache_sim *csim)
 }
 
 /* Return new cache set with E lines.
- * If E<0, then print error and return null */
+ * If E<0, then print error and return null
+ */
 struct cache_set *new_cset(int E)
 {
     if (E < 0)
@@ -162,8 +164,7 @@ void remove_line(struct cache_line *cline)
 
 struct cache_sim *new_csim(void)
 {
-    struct cache_sim *csim = malloc(sizeof(struct cache_sim));
-    csim = calloc(1, sizeof(struct cache_sim)); // set all space in csim to zero
+    struct cache_sim *csim = calloc(1, sizeof(struct cache_sim)); // set all in csim to zero
     return csim;
 }
 
@@ -325,6 +326,7 @@ struct cache_sim *cache_init(int argc, char *argv[])
             trace_name = malloc(strlen(optarg) + 1);
             strcpy(trace_name, optarg);
             csim->trace_file = optarg;
+            free(trace_name);
             break;
         }
     }
@@ -345,4 +347,33 @@ void print_help(void)
     printf("Examples:\n");
     printf("  linux>  ./csim -s 4 -E 1 -b 4 -t traces/yi.trace\n");
     printf("  linux>  ./csim -v -s 4 -E 1 -b 4 -t traces/yi.trace\n");
+}
+
+void free_csim(struct cache_sim *csim)
+{
+    int i;
+    int S = 1 << (csim->s); // S = 2^s cache sets in cache_sim
+    for (i = 0; i < S; i++)
+    {
+        free_cset(csim->cache[i]); // free all lines in each cset
+    }
+    free(csim->cache); // free all sets in csim
+    free(csim);
+}
+
+/*
+ * free all lines in the given cset
+ */
+void free_cset(struct cache_set *cset)
+{
+    struct cache_line *curr_line = cset->head;
+    struct cache_line *next_line;
+
+    while (curr_line)
+    {
+        next_line = curr_line->next; // saving before free to prevent losing line pointer
+        free(curr_line);
+        curr_line = next_line;
+    }
+    free(cset);
 }
