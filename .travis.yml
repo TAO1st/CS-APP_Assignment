@@ -1,4 +1,6 @@
 language: c
+os: linux
+dist: xenial
 
 before_script:
   - gcc --version
