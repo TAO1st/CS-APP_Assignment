@@ -10,6 +10,7 @@ stages:
   - 1_datalab:autograding
   - 1_datalab:coverage
   - 2_bomblab:autograding
+  - 3_attacklab:autograding
   - 4_cachelab:build
   - 4_cachelab:leak_check
   - 4_cachelab:autograding
@@ -35,6 +36,19 @@ jobs:
       script:
         - cd 2_bomblab
         - ./bomb phrase.txt
+    - stage: 3_attacklab:autograding
+      script:
+        - cd 3_attacklab
+        - ./hex2raw < cp1.txt >cp1_o.txt
+        - ./ctarget -qi cp1_o.txt
+        - ./hex2raw < cp2.txt >cp2_o.txt
+        - ./ctarget -qi cp2_o.txt
+        - ./hex2raw < cp3.txt >cp3_o.txt
+        - ./ctarget -qi cp3_o.txt
+        - ./hex2raw < rp4.txt >rp4_o.txt
+        - ./rtarget -qi rp4_o.txt
+        - ./hex2raw < rp5.txt >rp5_o.txt
+        - ./rtarget -qi rp5_o.txt
     - stage: 4_cachelab:build
       script:
         - cd 4_cachelab
