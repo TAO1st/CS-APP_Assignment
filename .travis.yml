@@ -66,5 +66,6 @@ jobs:
         - cd 4_cachelab
         - make clean
         - make
-        - ./test-csim
+        - sudo apt-get install python
+        - ./driver.py
     
