@@ -68,6 +68,6 @@ jobs:
         - cd 4_cachelab
         - make clean
         - make
-        - sudo apt-get install python
+        - sudo apt-get install valgrind
         - ./driver.py
     
