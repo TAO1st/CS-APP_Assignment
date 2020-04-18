@@ -23,5 +23,12 @@
 			],
 			"dependsOn": "make clean"
 		},
+		{
+			"label": "build trans test",
+			"type": "shell",
+			"command": [
+				"gcc -g -Wall -Werror -std=c99 -m64 -o test test.c"
+			]
+		},
 	]
 }

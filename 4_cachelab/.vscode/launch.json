@@ -5,10 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "gcc - Build and debug active file",
+            "name": "csim",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${fileDirname}/${fileBasenameNoExtension}",
+            "program": "${fileDirname}/csim",
             "args": [
                 "-v",
                 "-s",
@@ -34,6 +34,52 @@
             ],
             "miDebuggerPath": "/usr/bin/gdb",
             "preLaunchTask": "make",
+        },
+        {
+            "name": "trans",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${fileDirname}/test-trans",
+            "args": [
+                "-M",
+                "32",
+                "-N",
+                "32",
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "miDebuggerPath": "/usr/bin/gdb",
+            "preLaunchTask": "make",
+        },
+        {
+            "name": "trans test",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${fileDirname}/test",
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "miDebuggerPath": "/usr/bin/gdb",
+            "preLaunchTask": "build trans test",
         },
     ]
 }
