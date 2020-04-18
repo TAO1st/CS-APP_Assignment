@@ -15,6 +15,7 @@
 
 int is_transpose(int M, int N, int A[N][M], int B[M][N]);
 void transpose_32(int M, int N, int A[N][M], int B[M][N]);
+void transpose_64(int M, int N, int A[N][M], int B[M][N]);
 void transpose_others(int M, int N, int A[N][M], int B[M][N]);
 
 /* 
@@ -30,6 +31,10 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N])
     if (M == 32 && N == 32)
     {
         transpose_32(M, N, A, B);
+    }
+    else if (M == 64 && N == 64)
+    {
+        transpose_64(M, N, A, B);
     }
     else
     {
@@ -58,7 +63,7 @@ void transpose_32(int M, int N, int A[N][M], int B[M][N])
                     }
                 }
 
-                // handle with diagonal elements in the end to avoid evicting
+                // handle with diagonal elements to avoid evicting
                 B[jj + k - kk][k] = A[k][jj + k - kk];
             }
         }
@@ -97,29 +102,83 @@ void transpose_submit2(int M, int N, int A[N][M], int B[M][N])
     }
 }
 
-char transpose_submit_desc64[] = "Transpose 64";
-void transpose_submit64(int M, int N, int A[N][M], int B[M][N])
+char transpose_desc64[] = "Transpose 64";
+void transpose_64(int M, int N, int A[N][M], int B[M][N])
 {
-    int j, k, kk, jj;
-    int bsize = 16;
-
-    for (kk = 0; kk < N; kk += bsize)
+    int i, j;
+    int x, y, x1, x2, x3, x4, x5, x6, x7, x8; // save in register
+    for (i = 0; i < N; i += 8)
     {
-        for (jj = 0; jj < M; jj += bsize)
+        for (j = 0; j < M; j += 8)
         {
-            for (k = kk; k < kk + bsize; k++)
+            // each line in subarray has 8 int elements (32 bytes)
+            // Step1: write first 4 lines in array B
+            for (x = i; x < i + 4; x++)
             {
-                for (j = jj; j < jj + bsize; j++)
-                {
-                    if ((k - kk) != (j - jj))
-                    {
-                        int temp = A[k][j];
-                        B[j][k] = temp;
-                    }
-                }
+                x1 = A[x][j + 0];
+                x2 = A[x][j + 1];
+                x3 = A[x][j + 2];
+                x4 = A[x][j + 3];
+                x5 = A[x][j + 4];
+                x6 = A[x][j + 5];
+                x7 = A[x][j + 6];
+                x8 = A[x][j + 7];
 
-                // handle with diagonal elements in the end to avoid evicting
-                B[jj + k - kk][k] = A[k][jj + k - kk];
+                // transpose to correct place
+                B[j + 0][x] = x1;
+                B[j + 1][x] = x2;
+                B[j + 2][x] = x3;
+                B[j + 3][x] = x4;
+
+                // not to visit the same line
+                // save following elements in other place temporarily
+                B[j + 0][x + 4] = x5;
+                B[j + 1][x + 4] = x6;
+                B[j + 2][x + 4] = x7;
+                B[j + 3][x + 4] = x8;
+            }
+
+            // Step2: write last 4 column of first 4 lines
+            //          and first 4 column of last 4 lines in array B
+            for (y = j; y < j + 4; y++)
+            {
+                x1 = A[i + 4][y];
+                x2 = A[i + 5][y];
+                x3 = A[i + 6][y];
+                x4 = A[i + 7][y];
+
+                // retrive temporarily saved elements in Step1 to registers
+                x5 = B[y][i + 4];
+                x6 = B[y][i + 5];
+                x7 = B[y][i + 6];
+                x8 = B[y][i + 7];
+
+                // transpose to correct place
+                B[y][i + 4] = x1;
+                B[y][i + 5] = x2;
+                B[y][i + 6] = x3;
+                B[y][i + 7] = x4;
+
+                // transpose retrived elements to correct place
+                B[y + 4][i + 0] = x5;
+                B[y + 4][i + 1] = x6;
+                B[y + 4][i + 2] = x7;
+                B[y + 4][i + 3] = x8;
+            }
+
+            // Step3: write last 4 lines and last 4 column in array B
+            for (x = i + 4; x < i + 8; x++)
+            {
+                x1 = A[x][j + 4];
+                x2 = A[x][j + 5];
+                x3 = A[x][j + 6];
+                x4 = A[x][j + 7];
+
+                // transpose to correct place
+                B[j + 4][x] = x1;
+                B[j + 5][x] = x2;
+                B[j + 6][x] = x3;
+                B[j + 7][x] = x4;
             }
         }
     }
@@ -193,7 +252,7 @@ void registerFunctions()
     /* Register any additional transpose functions */
     registerTransFunction(trans, trans_desc);
     registerTransFunction(transpose_submit2, transpose_submit_desc2);
-    registerTransFunction(transpose_submit, transpose_submit_desc64);
+    registerTransFunction(transpose_64, transpose_desc64);
     registerTransFunction(transpose_32, transpose_32_desc);
     registerTransFunction(transpose_others, transpose_others_desc);
 }
