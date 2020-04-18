@@ -154,6 +154,7 @@ void transpose_64(int M, int N, int A[N][M], int B[M][N])
                 x8 = B[y][i + 7];
 
                 // transpose to correct place
+                // cache friendly: load B[y][i + l] in cache directly
                 B[y][i + 4] = x1;
                 B[y][i + 5] = x2;
                 B[y][i + 6] = x3;
