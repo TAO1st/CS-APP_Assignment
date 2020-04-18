@@ -19,5 +19,5 @@ All the lab assignment is built, compiled and autograded by [Travis-CI](https://
 |  1_datalab  |        Total points: 36/36        |      /      |     Pass     |
 |  2_bomblab  | pass all 6 phase + 1 secret_phase |      /      |      /       |
 | 3_attacklab |  pass all 3 ctarget + 2 rtarget   |      /      |      /       |
-| 4_cachelab  |      TEST_CSIM_RESULTS=27/27      |  No leaks   |     Pass     |
+| 4_cachelab  |        Total points: 53/53        |  No leaks   |     Pass     |
 
