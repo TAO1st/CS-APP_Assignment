@@ -7,21 +7,22 @@ after_success:
   - make clean
 
 stages:
-  - 1_autograding
-  - 1_coverage
-  - 4_build
-  - 4_leak_check
-  - 4_autograding
+  - 1_datalab:autograding
+  - 1_datalab:coverage
+  - 2_bomblab:autograding
+  - 4_cachelab:build
+  - 4_cachelab:leak_check
+  - 4_cachelab:autograding
 
 jobs:
   include:
-    - stage: 1_autograding
+    - stage: 1_datalab:autograding
       script: 
         - cd 1_datalab
         - make clean
         - make
         - ./btest
-    - stage: 1_coverage
+    - stage: 1_datalab:coverage
       script:
         - cd 1_datalab
         - make clean
@@ -30,19 +31,23 @@ jobs:
         - ./btest
         - gcov bits.c
         - bash <(curl -s https://codecov.io/bash)
-    - stage: 4_build
+    - stage: 2_bomblab:autograding
+      script:
+        - cd 2_bomblab
+        - ./bomb phrase.txt
+    - stage: 4_cachelab:build
       script:
         - cd 4_cachelab
         - make clean
         - make
-    - stage: 4_leak_check
+    - stage: 4_cachelab:leak_check
       script:
         - cd 4_cachelab
         - make clean
         - make
         - sudo apt-get install valgrind
         - valgrind --leak-resolution=high --leak-check=full --show-reachable=yes --track-fds=yes ./csim -v -s 4 -E 1 -b 4 -t "traces/dave.trace"
-    - stage: 4_autograding
+    - stage: 4_cachelab:autograding
       script:
         - cd 4_cachelab
         - make clean
