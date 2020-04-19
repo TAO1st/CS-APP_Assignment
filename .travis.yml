@@ -50,7 +50,7 @@ jobs:
         - ./hex2raw < rp4.txt >rp4_o.txt
         - ./rtarget -qi rp4_o.txt
         - ./hex2raw < rp5.txt >rp5_o.txt
-        - ./ctarget -qi rp5_o.txt
+        - ./rtarget -qi rp5_o.txt
     - stage: 4_cachelab:build
       script:
         - cd 4_cachelab
