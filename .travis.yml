@@ -16,6 +16,8 @@ stages:
   - 4_cachelab:build
   - 4_cachelab:leak_check
   - 4_cachelab:autograding
+  - 5_shlab:build
+  - 5_shlab:leak_check
 
 jobs:
   include:
@@ -70,4 +72,32 @@ jobs:
         - make
         - sudo apt-get install valgrind
         - ./driver.py
-    
+    - stage: 5_shlab:build
+      script:
+        - cd 5_shlab
+        - make clean
+        - make
+    - stage: 5_shlab:leak_check
+      script:
+        - cd 5_shlab
+        - make clean
+        - make
+        - sudo apt-get install valgrind
+        - valgrind --leak-resolution=high --leak-check=full --show-reachable=yes --track-fds=yes ./sdriver.pl -t trace01.txt -s ./tsh -a "-p"
+        - valgrind --leak-resolution=high --leak-check=full --show-reachable=yes --track-fds=yes ./sdriver.pl -t trace02.txt -s ./tsh -a "-p"
+        - valgrind --leak-resolution=high --leak-check=full --show-reachable=yes --track-fds=yes ./sdriver.pl -t trace03.txt -s ./tsh -a "-p"
+        - valgrind --leak-resolution=high --leak-check=full --show-reachable=yes --track-fds=yes ./sdriver.pl -t trace04.txt -s ./tsh -a "-p"
+        - valgrind --leak-resolution=high --leak-check=full --show-reachable=yes --track-fds=yes ./sdriver.pl -t trace05.txt -s ./tsh -a "-p"
+        - valgrind --leak-resolution=high --leak-check=full --show-reachable=yes --track-fds=yes ./sdriver.pl -t trace06.txt -s ./tsh -a "-p"
+        - valgrind --leak-resolution=high --leak-check=full --show-reachable=yes --track-fds=yes ./sdriver.pl -t trace07.txt -s ./tsh -a "-p"
+        - valgrind --leak-resolution=high --leak-check=full --show-reachable=yes --track-fds=yes ./sdriver.pl -t trace08.txt -s ./tsh -a "-p"
+        - valgrind --leak-resolution=high --leak-check=full --show-reachable=yes --track-fds=yes ./sdriver.pl -t trace09.txt -s ./tsh -a "-p"
+        - valgrind --leak-resolution=high --leak-check=full --show-reachable=yes --track-fds=yes ./sdriver.pl -t trace010.txt -s ./tsh -a "-p"
+        - valgrind --leak-resolution=high --leak-check=full --show-reachable=yes --track-fds=yes ./sdriver.pl -t trace011.txt -s ./tsh -a "-p"
+        - valgrind --leak-resolution=high --leak-check=full --show-reachable=yes --track-fds=yes ./sdriver.pl -t trace012.txt -s ./tsh -a "-p"
+        - valgrind --leak-resolution=high --leak-check=full --show-reachable=yes --track-fds=yes ./sdriver.pl -t trace013.txt -s ./tsh -a "-p"
+        - valgrind --leak-resolution=high --leak-check=full --show-reachable=yes --track-fds=yes ./sdriver.pl -t trace014.txt -s ./tsh -a "-p"
+        - valgrind --leak-resolution=high --leak-check=full --show-reachable=yes --track-fds=yes ./sdriver.pl -t trace015.txt -s ./tsh -a "-p"
+        - valgrind --leak-resolution=high --leak-check=full --show-reachable=yes --track-fds=yes ./sdriver.pl -t trace016.txt -s ./tsh -a "-p"
+
+  
