@@ -171,6 +171,7 @@ int main(int argc, char **argv)
 */
 void eval(char *cmdline)
 {
+    // TODO: 70 lines
     return;
 }
 
@@ -243,6 +244,7 @@ int parseline(const char *cmdline, char **argv)
  */
 int builtin_cmd(char **argv)
 {
+    // TODO: 25 lines
     return 0; /* not a builtin command */
 }
 
@@ -251,6 +253,7 @@ int builtin_cmd(char **argv)
  */
 void do_bgfg(char **argv)
 {
+    // TODO: 50 lines
     return;
 }
 
@@ -259,6 +262,7 @@ void do_bgfg(char **argv)
  */
 void waitfg(pid_t pid)
 {
+    // TODO: 20 lines
     return;
 }
 
@@ -275,6 +279,7 @@ void waitfg(pid_t pid)
  */
 void sigchld_handler(int sig)
 {
+    // TODO: 80 lines
     return;
 }
 
@@ -285,6 +290,16 @@ void sigchld_handler(int sig)
  */
 void sigint_handler(int sig)
 {
+    // DEBUG: 15 lines
+
+    pid_t pid = fgpid(jobs);
+    if (pid != 0)
+    {
+        if (kill(-pid, SIGINT) != 0)
+        {
+            unix_error("kill failed!");
+        }
+    }
     return;
 }
 
@@ -295,6 +310,7 @@ void sigint_handler(int sig)
  */
 void sigtstp_handler(int sig)
 {
+    // TODO: 15 lines
     return;
 }
 
