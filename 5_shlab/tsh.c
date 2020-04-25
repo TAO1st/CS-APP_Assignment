@@ -171,7 +171,7 @@ int main(int argc, char **argv)
 */
 void eval(char *cmdline)
 {
-    // TODO: 70 lines
+    // DEBUG: 70 lines
 
     pid_t pid;           /* Process id */
     int bg;              /* Should the job runin bg or fg */
@@ -189,31 +189,33 @@ void eval(char *cmdline)
 
     if (!builtin_cmd(argv))
     {
-        if ((pid = fork()) == 0) {  /* child */
+        if ((pid = fork()) == 0)
+        { /* child */
 
-	    /* Background jobs should ignore SIGINT (ctrl-c)  */
-	    /* and SIGTSTP (ctrl-z) */
-	    if (bg) {
-		Signal(SIGINT, SIG_IGN);
-		Signal(SIGTSTP, SIG_IGN);
-	    }
+            /* Background jobs should ignore SIGINT (ctrl-c)  */
+            /* and SIGTSTP (ctrl-z) */
+            if (bg)
+            {
+                Signal(SIGINT, SIG_IGN);
+                Signal(SIGTSTP, SIG_IGN);
+            }
 
-	    if (execve(argv[0], argv, environ) < 0) {
-		printf("%s: Command not found.\n", argv[0]);
-		fflush(stdout);
-		exit(0);
-	    }
-	}
-    /* parent waits for foreground job to terminate or stop */
-	addjob(jobs, pid, (bg == 1 ? BG : FG), cmdline);
-	if (!bg) 
-	    waitfg(pid);
-	else    // print for backgroung job
-	    printf("[%d] (%d) %s", maxjid(jobs), pid, cmdline);
+            if (execve(argv[0], argv, environ) < 0)
+            {
+                printf("%s: Command not found.\n", argv[0]);
+                fflush(stdout);
+                exit(0);
+            }
+        }
+        /* parent waits for foreground job to terminate or stop */
+        addjob(jobs, pid, (bg == 1 ? BG : FG), cmdline);
+        if (!bg)
+            waitfg(pid);
+        else // print for backgroung job
+            printf("[%d] (%d) %s", maxjid(jobs), pid, cmdline);
     }
     return;
 
-    
     return;
 }
 
@@ -350,8 +352,34 @@ void do_bgfg(char **argv)
  */
 void waitfg(pid_t pid)
 {
-    // TODO: 20 lines
-    return;
+    // DEBUG: 20 lines
+    int status;
+
+    /* wait for FG job to stop (WUNTRACED) or terminate */
+    if (waitpid(pid, &status, WUNTRACED) < 0)
+        unix_error("waitfg: waitpid error");
+
+    /* FG job has stopped. Change its state in jobs list */
+    if (WIFSTOPPED(status))
+    {
+        sprintf(sbuf, "Job %d stopped by signal", pid);
+        psignal(WSTOPSIG(status), sbuf);
+        updatejob(jobs, pid, ST);
+    }
+
+    /* FG job has terminated. Remove it from job list */
+    else
+    {
+        /* check if job was terminated by an uncaught signal */
+        if (WIFSIGNALED(status))
+        {
+            sprintf(sbuf, "Job %d terminated by signal", pid);
+            psignal(WTERMSIG(status), sbuf);
+        }
+        deletejob(jobs, pid);
+        if (verbose)
+            printf("waitfg: job %d deleted\n", pid);
+    }
 }
 
 /*****************
