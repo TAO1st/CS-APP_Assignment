@@ -215,8 +215,6 @@ void eval(char *cmdline)
             printf("[%d] (%d) %s", maxjid(jobs), pid, cmdline);
     }
     return;
-
-    return;
 }
 
 /* 
@@ -310,7 +308,7 @@ int builtin_cmd(char **argv)
     if (!strcmp(argv[0], "jobs")) /* jobs command */
     {
         listjobs(jobs);
-        printf("\n");
+        return 1;
     }
 
     return 0; /* not a builtin command */
@@ -345,6 +343,23 @@ void do_bgfg(char **argv)
         getjobjid(jobs, jid)->state = FG;
     }
     return;
+}
+
+/* updatejob - update the state of a job with PID=pid */
+int updatejob(struct job_t *jobs, pid_t pid, int state)
+{
+    int i;
+
+    for (i = 0; i < MAXJOBS; i++)
+    {
+        if (jobs[i].pid == pid)
+        {
+            jobs[i].state = state;
+            return 1;
+        }
+    }
+    printf("Job %d not found\n", pid);
+    return 0;
 }
 
 /* 
