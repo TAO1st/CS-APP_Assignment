@@ -96,5 +96,8 @@ rtest16:
 # clean up
 clean:
 	rm -f $(FILES) *.o *~
+	rm -f tshref_trace*
+	rm -f tsh_trace*
+	rm -f diff_trace*
 
 
