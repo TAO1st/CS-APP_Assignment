@@ -13,9 +13,10 @@ do
     diff tsh_$file tshref_$file > diff_$file
 done
 
+echo -e "-------------------------------------\n"
+
 for file in $(ls diff_trace*)
 do
-    echo -e "-------------------------------------\n"
     echo $file " :"
     cat $file
     echo -e "-------------------------------------\n"
