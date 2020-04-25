@@ -319,30 +319,60 @@ int builtin_cmd(char **argv)
  */
 void do_bgfg(char **argv)
 {
-    // TODO: 50 lines
+    // DEBUG: 50 lines
 
-    char *arg = argv[0];
-    if (!strcmp(arg, "bg"))
+    int pid = atoi(argv[1]);
+    ;
+    struct job_t *jobp;
+    char *cmd = argv[0];
+
+    /* ignore command if no argument */
+    if (argv[1] == NULL)
     {
-        if (argv[1] == NULL)
-        {
-            fprintf(stderr, "bg command requires additional argument\n");
-            return;
-        }
-        int jid = atoi(argv[1]);
-        getjobjid(jobs, jid)->state = BG;
+        printf("%s command needs PID argument\n", cmd);
+        return 1;
     }
-    else if (!strcmp(arg, "fg"))
+
+    if ((jobp = getjob(jobs, pid)) != NULL)
     {
-        if (argv[1] == NULL)
+        if (!strcmp(cmd, "bg"))
         {
-            fprintf(stderr, "bg command requires additional argument\n");
-            return;
+            Kill(pid, SIGCONT);
+            updatejob(jobs, pid, BG);
+            printf("[%d] (%d) %s", maxjid(jobs), pid, jobs->cmdline);
         }
-        int jid = atoi(argv[1]);
-        getjobjid(jobs, jid)->state = FG;
+        if (!strcmp(cmd, "fg"))
+        {
+            Kill(pid, SIGCONT);
+            updatejob(jobs, pid, FG);
+            waitfg(pid);
+        }
     }
-    return;
+    else
+        printf("Job %d not found\n", pid);
+
+    // char *arg = argv[0];
+    // if (!strcmp(arg, "bg"))
+    // {
+    //     if (argv[1] == NULL)
+    //     {
+    //         fprintf(stderr, "bg command requires additional argument\n");
+    //         return;
+    //     }
+    //     int jid = atoi(argv[1]);
+    //     getjobjid(jobs, jid)->state = BG;
+    // }
+    // else if (!strcmp(arg, "fg"))
+    // {
+    //     if (argv[1] == NULL)
+    //     {
+    //         fprintf(stderr, "bg command requires additional argument\n");
+    //         return;
+    //     }
+    //     int jid = atoi(argv[1]);
+    //     getjobjid(jobs, jid)->state = FG;
+    // }
+    // return;
 }
 
 /* updatejob - update the state of a job with PID=pid */
