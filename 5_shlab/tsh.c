@@ -189,32 +189,31 @@ void eval(char *cmdline)
 
     if (!builtin_cmd(argv))
     {
-        if ((pid = fork()) == 0)
-        {
-            printf("\n");
-        }
-        else
-        {
-            if (!bg)
-            {
-                // parant runs fg job
-                addjob(jobs, pid, FG, cmdline);
-                /* TODO: unblock SIG_CHLD */
-                int status;
-                if (waitpid(pid, &status, 0) < 0)
-                {
-                    unix_error("waitfg: waitpid error");
-                }
-            }
-            else
-            {
-                // parant runs bg job
-                addjob(jobs, pid, BG, cmdline);
-                /* TODO: unblock SIG_CHLD */
-                printf("[%d] (%d) %s", maxjid(jobs), pid, cmdline);
-            }
-        }
+        if ((pid = fork()) == 0) {  /* child */
+
+	    /* Background jobs should ignore SIGINT (ctrl-c)  */
+	    /* and SIGTSTP (ctrl-z) */
+	    if (bg) {
+		Signal(SIGINT, SIG_IGN);
+		Signal(SIGTSTP, SIG_IGN);
+	    }
+
+	    if (execve(argv[0], argv, environ) < 0) {
+		printf("%s: Command not found.\n", argv[0]);
+		fflush(stdout);
+		exit(0);
+	    }
+	}
+    /* parent waits for foreground job to terminate or stop */
+	addjob(jobs, pid, (bg == 1 ? BG : FG), cmdline);
+	if (!bg) 
+	    waitfg(pid);
+	else    // print for backgroung job
+	    printf("[%d] (%d) %s", maxjid(jobs), pid, cmdline);
     }
+    return;
+
+    
     return;
 }
 
