@@ -290,7 +290,7 @@ int parseline(const char *cmdline, char **argv) {
  *    it immediately.
  */
 int builtin_cmd(char **argv) {
-    // TODO: 25 lines
+    // DEBUG: 25 lines
 
     if (!strcmp(argv[0], "&")) /* Ignore singleton & */
     {
