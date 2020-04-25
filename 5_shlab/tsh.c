@@ -172,6 +172,49 @@ int main(int argc, char **argv)
 void eval(char *cmdline)
 {
     // TODO: 70 lines
+
+    pid_t pid;           /* Process id */
+    int bg;              /* Should the job runin bg or fg */
+    char *argv[MAXARGS]; /* Argument list execve() */
+    char buf[MAXLINE];   /* Holds modified command line */
+
+    strcpy(buf, cmdline);
+
+    /* true if the user has requested a BG job
+     * false if the user has requested a FG job. */
+    bg = parseline(cmdline, argv);
+
+    if (argv[0] == NULL)
+        return;
+
+    if (!builtin_cmd(argv))
+    {
+        if ((pid = fork()) == 0)
+        {
+            printf("\n");
+        }
+        else
+        {
+            if (!bg)
+            {
+                // parant runs fg job
+                addjob(jobs, pid, FG, cmdline);
+                /* TODO: unblock SIG_CHLD */
+                int status;
+                if (waitpid(pid, &status, 0) < 0)
+                {
+                    unix_error("waitfg: waitpid error");
+                }
+            }
+            else
+            {
+                // parant runs bg job
+                addjob(jobs, pid, BG, cmdline);
+                /* TODO: unblock SIG_CHLD */
+                printf("[%d] (%d) %s", maxjid(jobs), pid, cmdline);
+            }
+        }
+    }
     return;
 }
 
@@ -245,6 +288,30 @@ int parseline(const char *cmdline, char **argv)
 int builtin_cmd(char **argv)
 {
     // TODO: 25 lines
+
+    if (!strcmp(argv[0], "&")) /* Ignore singleton & */
+    {
+        return 1;
+    }
+
+    if (!strcmp(argv[0], "quit")) /* quit command */
+    {
+        exit(0);
+    }
+    if (!strcmp(argv[0], "fg")) /* fg command */
+    {
+        do_bgfg(argv);
+    }
+    if (!strcmp(argv[0], "bg")) /* bg command */
+    {
+        do_bgfg(argv);
+    }
+    if (!strcmp(argv[0], "jobs")) /* jobs command */
+    {
+        listjobs(jobs);
+        printf("\n");
+    }
+
     return 0; /* not a builtin command */
 }
 
@@ -254,6 +321,28 @@ int builtin_cmd(char **argv)
 void do_bgfg(char **argv)
 {
     // TODO: 50 lines
+
+    char *arg = argv[0];
+    if (!strcmp(arg, "bg"))
+    {
+        if (argv[1] == NULL)
+        {
+            fprintf(stderr, "bg command requires additional argument\n");
+            return;
+        }
+        int jid = atoi(argv[1]);
+        getjobjid(jobs, jid)->state = BG;
+    }
+    else if (!strcmp(arg, "fg"))
+    {
+        if (argv[1] == NULL)
+        {
+            fprintf(stderr, "bg command requires additional argument\n");
+            return;
+        }
+        int jid = atoi(argv[1]);
+        getjobjid(jobs, jid)->state = FG;
+    }
     return;
 }
 
@@ -290,7 +379,7 @@ void sigchld_handler(int sig)
  */
 void sigint_handler(int sig)
 {
-    // DEBUG: 15 lines
+    // DEBUG: 15 lines (pass)
 
     pid_t pid = fgpid(jobs);
     if (pid != 0)
@@ -310,7 +399,7 @@ void sigint_handler(int sig)
  */
 void sigtstp_handler(int sig)
 {
-    // TODO: 15 lines
+    // DEBUG: 15 lines
     pid_t pid = fgpid(jobs);
     if (pid != 0)
     {
