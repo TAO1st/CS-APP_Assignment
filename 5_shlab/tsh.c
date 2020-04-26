@@ -157,10 +157,6 @@ int updatejob(struct job_t *jobs, pid_t pid, int state) {
     for (i = 0; i < MAXJOBS; i++) {
         if (jobs[i].pid == pid) {
             jobs[i].state = state;
-            // if (state==FG){
-            //     Signal(SIGINT, sigint_handler);
-            //     Signal(SIGTSTP, sigtstp_handler);
-            // }
             return 1;
         }
     }
@@ -204,33 +200,26 @@ void eval(char *cmdline) {
         // Block SIGCHLD
         sigprocmask(SIG_BLOCK, &mask_one, &prev_one);
 
-        if ((pid = fork()) == 0) { /* child */
-
+        if ((pid = fork()) == 0) { /* child execve user's command */
             // Unblock SIGCHLD
             sigprocmask(SIG_SETMASK, &prev_one, NULL);
             setpgid(0, 0);
-
-            /* Background jobs should ignore SIGINT (ctrl-c)  */
-            /* and SIGTSTP (ctrl-z) */
-            // if (bg) {
-            //     Signal(SIGINT, SIG_IGN);
-            //     Signal(SIGTSTP, SIG_IGN);
-            // }
 
             if (execve(argv[0], argv, environ) < 0) {
                 printf("%s: Command not found\n", argv[0]);
                 fflush(stdout);
                 exit(0);
             }
+        } else { /* parent add the job to the joblist */
+            sigprocmask(SIG_BLOCK, &mask_all, NULL);
+            addjob(jobs, pid, (bg == 1 ? BG : FG), cmdline);
+            sigprocmask(SIG_SETMASK, &prev_one, NULL);
+
+            if (!bg) /* parent waits for foreground job to terminate or stop */
+                waitfg(pid);
+            else /* parent print for backgroung job */
+                printf("[%d] (%d) %s", pid2jid(pid), pid, cmdline);
         }
-        /* parent waits for foreground job to terminate or stop */
-        sigprocmask(SIG_BLOCK, &mask_all, NULL);
-        addjob(jobs, pid, (bg == 1 ? BG : FG), cmdline);
-        sigprocmask(SIG_SETMASK, &prev_one, NULL);
-        if (!bg)
-            waitfg(pid);
-        else  // print for backgroung job
-            printf("[%d] (%d) %s", pid2jid(pid), pid, cmdline);
     }
     return;
 }
@@ -350,7 +339,7 @@ void do_bgfg(char **argv) {
         }
 
         pid = jobp->pid;
-    } else {      // handle for pid
+    } else {  // handle for pid
         pid = atoi(argv[1]);
 
         if (pid == 0) {
@@ -382,29 +371,12 @@ void do_bgfg(char **argv) {
  */
 void waitfg(pid_t pid) {
     // DEBUG: 20 lines
-    int status;
 
-    /* wait for FG job to stop (WUNTRACED) or terminate */
-    if (waitpid(pid, &status, WUNTRACED) < 0)
-        unix_error("waitfg: waitpid error");
-
-    /* FG job has stopped. Change its state in jobs list */
-    if (WIFSTOPPED(status)) {
-        sprintf(sbuf, "Job [%d] (%d) stopped by signal 20", pid2jid(pid), pid);
-        updatejob(jobs, pid, ST);
-    }
-
-    /* FG job has terminated. Remove it from job list */
-    else {
-        /* check if job was terminated by an uncaught signal */
-        if (WIFSIGNALED(status)) {
-            sprintf(sbuf, "Job [%d] (%d) terminated by signal %d", pid2jid(pid),
-                    pid, WTERMSIG(status));
-            psignal(WTERMSIG(status), sbuf);
-        }
-        deletejob(jobs, pid);
-        if (verbose) printf("waitfg: job %d deleted\n", pid);
-    }
+    sigset_t mask_temp;
+    // unblock any signal
+    sigemptyset(&mask_temp);
+    while (fgpid(jobs) > 0) sigsuspend(&mask_temp);
+    return;
 }
 
 /*****************
@@ -510,9 +482,6 @@ void sigtstp_handler(int sig) {
             unix_error("Suspend failed!");
             return;
         }
-        sprintf(sbuf, "Job [%d] (%d) stopped by signal 20", pid2jid(pid), pid);
-        printf("%s\n", sbuf);
-        //updatejob(jobs, pid, ST);
     }
     return;
 }
