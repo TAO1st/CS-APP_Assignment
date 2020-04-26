@@ -332,6 +332,7 @@ void do_bgfg(char **argv) {
     /* ignore command if no argument */
     if (argv[1] == NULL) {
         printf("%s command requires PID or %%jobid argument\n", cmd);
+        return;
     }
 
     if (argv[1][0] == '%') {  // handle for jid
