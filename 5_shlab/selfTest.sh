@@ -1,10 +1,10 @@
 #! /bin/bash
 
-echo -e "----------- Autograding Begin ------------\n"
+echo -e "----------- Autograding Begin ------------"
 for file in $(ls trace*)
 do
-    ./sdriver.pl -t $file -s ./tshref > tshref_$file
-    ./sdriver.pl -t $file -s ./tsh > tsh_$file
+    make test10 > tsh_$file
+    make rtest10 > tshref_$file
     echo -e "Running and grading $file"
 done 
 
@@ -19,5 +19,5 @@ for file in $(ls diff_trace*)
 do
     echo $file " :"
     cat $file
-    echo -e "-------------------------------------\n"
+    echo -e "\n-------------------------------------"
 done
