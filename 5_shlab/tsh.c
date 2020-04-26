@@ -197,20 +197,25 @@ void eval(char *cmdline) {
     sigaddset(&mask_one, SIGCHLD);
 
     if (!builtin_cmd(argv)) {
-        // Block SIGCHLD
+        /* Block SIGCHLD before parent forks the child */
         sigprocmask(SIG_BLOCK, &mask_one, &prev_one);
 
         if ((pid = fork()) == 0) { /* child execve user's command */
-            // Unblock SIGCHLD
+            /* Unblock SIGCHLD in the child */
             sigprocmask(SIG_SETMASK, &prev_one, NULL);
             setpgid(0, 0);
 
+            /* execve returns −1 on error */
             if (execve(argv[0], argv, environ) < 0) {
                 printf("%s: Command not found\n", argv[0]);
                 fflush(stdout);
                 exit(0);
             }
         } else { /* parent add the job to the joblist */
+            /*** IMPORTANT ***
+             * the parent need to block SIGCHLD to avoid the race condition
+             * where the child is reaped by sigchld_handler before the parent
+             * calls addjob */
             sigprocmask(SIG_BLOCK, &mask_all, NULL);
             addjob(jobs, pid, (bg == 1 ? BG : FG), cmdline);
             sigprocmask(SIG_SETMASK, &prev_one, NULL);
@@ -283,7 +288,7 @@ int parseline(const char *cmdline, char **argv) {
  *    it immediately.
  */
 int builtin_cmd(char **argv) {
-    // DEBUG: 25 lines
+    // DEBUG: 25 lines (pass)
 
     if (!strcmp(argv[0], "&")) /* Ignore singleton & */
     {
@@ -328,7 +333,7 @@ void do_bgfg(char **argv) {
         return;
     }
 
-    if (argv[1][0] == '%') {  // handle for jid
+    if (argv[1][0] == '%') { /* handle for jid */
         char *arg = &argv[1][1];
         int jid = atoi(arg);
         jobp = getjobjid(jobs, jid);
@@ -339,7 +344,7 @@ void do_bgfg(char **argv) {
         }
 
         pid = jobp->pid;
-    } else {  // handle for pid
+    } else { /* handle for pid */
         pid = atoi(argv[1]);
 
         if (pid == 0) {
@@ -372,8 +377,8 @@ void do_bgfg(char **argv) {
 void waitfg(pid_t pid) {
     // DEBUG: 20 lines (pass)
     sigset_t mask_temp;
-    sigemptyset(&mask_temp);  // unblock any signal
-    while (fgpid(jobs) > 0) {
+    sigemptyset(&mask_temp);  /* unblock any signal */
+    while (fgpid(jobs) > 0) { /* use a busy loop around sleep function */
         sigsuspend(&mask_temp);
     }
     return;
@@ -480,7 +485,6 @@ void sigtstp_handler(int sig) {
     if (pid != 0) {
         if (kill(-pid, SIGTSTP) != 0) {
             unix_error("Suspend failed!");
-            return;
         }
     }
     return;
