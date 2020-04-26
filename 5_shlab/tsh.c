@@ -503,6 +503,7 @@ void sigtstp_handler(int sig) {
     if (pid != 0) {
         if (kill(-pid, SIGTSTP) != 0) {
             unix_error("Suspend failed!");
+            return;
         }
         sprintf(sbuf, "Job [%d] (%d) stopped by signal 20", pid2jid(pid), pid);
         printf("%s\n", sbuf);
