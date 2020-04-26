@@ -157,6 +157,10 @@ int updatejob(struct job_t *jobs, pid_t pid, int state) {
     for (i = 0; i < MAXJOBS; i++) {
         if (jobs[i].pid == pid) {
             jobs[i].state = state;
+            // if (state==FG){
+            //     Signal(SIGINT, sigint_handler);
+            //     Signal(SIGTSTP, sigtstp_handler);
+            // }
             return 1;
         }
     }
@@ -208,10 +212,10 @@ void eval(char *cmdline) {
 
             /* Background jobs should ignore SIGINT (ctrl-c)  */
             /* and SIGTSTP (ctrl-z) */
-            if (bg) {
-                Signal(SIGINT, SIG_IGN);
-                Signal(SIGTSTP, SIG_IGN);
-            }
+            // if (bg) {
+            //     Signal(SIGINT, SIG_IGN);
+            //     Signal(SIGTSTP, SIG_IGN);
+            // }
 
             if (execve(argv[0], argv, environ) < 0) {
                 printf("%s: Command not found\n", argv[0]);
@@ -226,7 +230,7 @@ void eval(char *cmdline) {
         if (!bg)
             waitfg(pid);
         else  // print for backgroung job
-            printf("[%d] (%d) %s", maxjid(jobs), pid, cmdline);
+            printf("[%d] (%d) %s", pid2jid(pid), pid, cmdline);
     }
     return;
 }
@@ -346,7 +350,7 @@ void do_bgfg(char **argv) {
         }
 
         pid = jobp->pid;
-    } else {
+    } else {      // handle for pid
         pid = atoi(argv[1]);
 
         if (pid == 0) {
@@ -508,7 +512,7 @@ void sigtstp_handler(int sig) {
         }
         sprintf(sbuf, "Job [%d] (%d) stopped by signal 20", pid2jid(pid), pid);
         printf("%s\n", sbuf);
-        updatejob(jobs, pid, ST);
+        //updatejob(jobs, pid, ST);
     }
     return;
 }
