@@ -21,14 +21,15 @@ stages:
 
 jobs:
   include:
-    - stage: 1_datalab:autograding
-      script: 
+    - stage: "1_datalab"
+      name: "build"
+      script:
         - cd 1_datalab
         - make clean
         - make
         - ./btest
-    - stage: 1_datalab:coverage
-      script:
+      -name: "coverage"
+      -script:
         - cd 1_datalab
         - make clean
         - make
@@ -36,6 +37,7 @@ jobs:
         - ./btest
         - gcov bits.c
         - bash <(curl -s https://codecov.io/bash)
+
     - stage: 2_bomblab:autograding
       script:
         - cd 2_bomblab
