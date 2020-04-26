@@ -3,8 +3,8 @@
 echo -e "----------- Autograding Begin ------------"
 for i in {01..16}
 do
-    make test$i > tsh_trace$i.txt
-    make rtest$i > tshref_trace$i.txt
+    ./sdriver.pl -t trace$i.txt -s ./tshref -a -p > tshref_trace$i.txt
+    ./sdriver.pl -t trace$i.txt -s ./tsh -a -p > tsh_trace$i.txt
     echo -e "Running and grading trace$i.txt"
 done 
 
