@@ -20,14 +20,14 @@ stages:
 jobs:
   include:
     - stage: "1_datalab"
-      name: "autograding"
-      script:
+      -name: "autograding"
+      -script:
         - cd 1_datalab
         - make clean
         - make
         - ./btest
-      -name: "coverage"
-      -script:
+      --name: "coverage"
+      --script:
         - cd 1_datalab
         - make clean
         - make
