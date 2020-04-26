@@ -304,10 +304,12 @@ int builtin_cmd(char **argv) {
     if (!strcmp(argv[0], "fg")) /* fg command */
     {
         do_bgfg(argv);
+        return 1;
     }
     if (!strcmp(argv[0], "bg")) /* bg command */
     {
         do_bgfg(argv);
+        return 1;
     }
     if (!strcmp(argv[0], "jobs")) /* jobs command */
     {
@@ -322,9 +324,7 @@ int builtin_cmd(char **argv) {
  * do_bgfg - Execute the builtin bg and fg commands
  */
 void do_bgfg(char **argv) {
-    // DEBUG: 50 lines
-
-    int jid = atoi(argv[1]);
+    // DEBUG: 50 lines (pass)
     struct job_t *jobp;
     char *cmd = argv[0];
     int pid;
@@ -334,20 +334,42 @@ void do_bgfg(char **argv) {
         printf("%s command needs PID argument\n", cmd);
     }
 
-    if ((jobp = getjobjid(jobs, jid)) != NULL) {
+    if (argv[1][0] == '%') {  // handle for jid
+        char *arg = &argv[1][1];
+        int jid = atoi(arg);
+        jobp = getjobjid(jobs, jid);
+
+        if (jobp == NULL) {
+            printf("%s: No such job\n", argv[1]);
+            return;
+        }
+
         pid = jobp->pid;
-        if (!strcmp(cmd, "bg")) {
-            kill(-pid, SIGCONT);
-            updatejob(jobs, pid, BG);
-            printf("[%d] (%d) %s", maxjid(jobs), pid, jobs->cmdline);
+    } else {
+        pid = atoi(argv[1]);
+
+        if (pid == 0) {
+            printf("%s argument must be a PID or %%jobid\n", cmd);
+            return;
         }
-        if (!strcmp(cmd, "fg")) {
-            kill(-pid, SIGCONT);
-            updatejob(jobs, pid, FG);
-            waitfg(pid);
+
+        jobp = getjobpid(jobs, pid);
+        if (jobp == NULL) {
+            printf("(%d): No such process\n", pid);
+            return;
         }
-    } else
-        printf("Job %d not found\n", pid);
+    }
+
+    if (!strcmp(cmd, "bg")) {
+        kill(-pid, SIGCONT);
+        updatejob(jobs, pid, BG);
+        printf("[%d] (%d) %s", pid2jid(pid), pid, jobp->cmdline);
+    }
+    if (!strcmp(cmd, "fg")) {
+        kill(-pid, SIGCONT);
+        updatejob(jobs, pid, FG);
+        waitfg(pid);
+    }
 }
 
 /*
@@ -363,8 +385,7 @@ void waitfg(pid_t pid) {
 
     /* FG job has stopped. Change its state in jobs list */
     if (WIFSTOPPED(status)) {
-        sprintf(sbuf, "Job [%d] (%d) stopped by signal %d", pid2jid(pid), pid,
-                WSTOPSIG(status));
+        sprintf(sbuf, "Job [%d] (%d) stopped by signal 20", pid2jid(pid), pid);
         updatejob(jobs, pid, ST);
     }
 
@@ -483,6 +504,9 @@ void sigtstp_handler(int sig) {
         if (kill(-pid, SIGTSTP) != 0) {
             unix_error("Suspend failed!");
         }
+        sprintf(sbuf, "Job [%d] (%d) stopped by signal 20", pid2jid(pid), pid);
+        printf("%s\n", sbuf);
+        updatejob(jobs, pid, ST);
     }
     return;
 }
