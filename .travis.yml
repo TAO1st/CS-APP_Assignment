@@ -82,4 +82,4 @@ jobs:
         - cd 5_shlab
         - make clean
         - make
-        - ./selfTest.sh
+        - ./autograding.sh
