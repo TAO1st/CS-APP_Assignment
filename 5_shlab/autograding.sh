@@ -13,7 +13,7 @@ do
     diff tsh_$file tshref_$file > diff_$file -I "./sdriver.pl -t trace"
 done
 
-echo -e "------------ \033[42;37mShow diff begin\033[0m -------------"
+echo -e "------------ \033[42;37mShow diff begin\033[0m -------------\n"
 
 for file in $(ls diff_trace*)
 do
@@ -21,6 +21,10 @@ do
     cat $file
     echo -e "\n-------------------------------------------------"
 done
+
+echo -e "\n\033[33mYour shell should produce IDENTICAL output on these traces as the reference shell, with only two exception:\033[0m"
+echo -e "\033[33m(1) The PIDs can (and will) be different.\033[0m"
+echo -e "\033[33m(2) The output of the /bin/ps command in trace11.txt, trace12.txt, and trace13.txt will be different from run to run. However, the running states of any mysplit processes in the output of the /bin/ps command should be identical.\033[0m\n"
 
 echo -e "\033[33mYour score will be computed out of a maximum of 90 points based on the following distribution:\033[0m"
 echo -e "\033[33m80 Correctness: 16 trace files at 5 points each.\033[0m"
