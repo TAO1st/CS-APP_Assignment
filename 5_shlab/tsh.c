@@ -214,7 +214,7 @@ void eval(char *cmdline) {
             }
 
             if (execve(argv[0], argv, environ) < 0) {
-                printf("%s: Command not found.\n", argv[0]);
+                printf("%s: Command not found\n", argv[0]);
                 fflush(stdout);
                 exit(0);
             }
@@ -331,7 +331,7 @@ void do_bgfg(char **argv) {
 
     /* ignore command if no argument */
     if (argv[1] == NULL) {
-        printf("%s command needs PID argument\n", cmd);
+        printf("%s command requires PID or %%jobid argument\n", cmd);
     }
 
     if (argv[1][0] == '%') {  // handle for jid
@@ -349,7 +349,7 @@ void do_bgfg(char **argv) {
         pid = atoi(argv[1]);
 
         if (pid == 0) {
-            printf("%s argument must be a PID or %%jobid\n", cmd);
+            printf("%s: argument must be a PID or %%jobid\n", cmd);
             return;
         }
 
