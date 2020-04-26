@@ -370,12 +370,12 @@ void do_bgfg(char **argv) {
  * waitfg - Block until process pid is no longer the foreground process
  */
 void waitfg(pid_t pid) {
-    // DEBUG: 20 lines
-
+    // DEBUG: 20 lines (pass)
     sigset_t mask_temp;
-    // unblock any signal
-    sigemptyset(&mask_temp);
-    while (fgpid(jobs) > 0) sigsuspend(&mask_temp);
+    sigemptyset(&mask_temp);  // unblock any signal
+    while (fgpid(jobs) > 0) {
+        sigsuspend(&mask_temp);
+    }
     return;
 }
 
