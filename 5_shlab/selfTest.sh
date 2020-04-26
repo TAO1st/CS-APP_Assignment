@@ -10,7 +10,7 @@ done
 
 for file in $(ls trace*)
 do
-    diff -l "./sdriver.pl -t trace" tsh_$file tshref_$file > diff_$file -I "./sdriver.pl -t trace"
+    diff tsh_$file tshref_$file > diff_$file -I "./sdriver.pl -t trace"
 done
 
 echo -e "-------------------------------------\n"
