@@ -78,6 +78,7 @@ struct job_t *getjobpid(struct job_t *jobs, pid_t pid);
 struct job_t *getjobjid(struct job_t *jobs, int jid);
 int pid2jid(pid_t pid);
 void listjobs(struct job_t *jobs);
+int updatejob(struct job_t *jobs, pid_t pid, int state);
 
 void usage(void);
 void unix_error(char *msg);
@@ -148,20 +149,6 @@ int main(int argc, char **argv) {
     }
 
     exit(0); /* control never reaches here */
-}
-
-/* updatejob - update the state of a job with PID=pid */
-int updatejob(struct job_t *jobs, pid_t pid, int state) {
-    int i;
-
-    for (i = 0; i < MAXJOBS; i++) {
-        if (jobs[i].pid == pid) {
-            jobs[i].state = state;
-            return 1;
-        }
-    }
-    printf("Job %d not found\n", pid);
-    return 0;
 }
 
 /*
@@ -628,6 +615,21 @@ void listjobs(struct job_t *jobs) {
         }
     }
 }
+
+/* updatejob - update the state of a job with PID=pid */
+int updatejob(struct job_t *jobs, pid_t pid, int state) {
+    int i;
+
+    for (i = 0; i < MAXJOBS; i++) {
+        if (jobs[i].pid == pid) {
+            jobs[i].state = state;
+            return 1;
+        }
+    }
+    printf("Job %d not found\n", pid);
+    return 0;
+}
+
 /******************************
  * end job list helper routines
  ******************************/
