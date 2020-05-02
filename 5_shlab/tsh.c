@@ -466,9 +466,11 @@ void sigchld_handler(int sig) {
 void sigint_handler(int sig) {
     // DEBUG: 15 lines (pass)
 
+    /* only fg job receive SIGINT */
     pid_t pid = fgpid(jobs);
     if (pid) {
-        if (kill(-pid, SIGINT) != 0) {
+        /* Send SIGINT signal to the entire fg process group */
+        if (kill(-pid, SIGINT) != 0) { /* returns 0 if OK, -1 on error */
             unix_error("Kill failed");
         }
     }
@@ -482,9 +484,12 @@ void sigint_handler(int sig) {
  */
 void sigtstp_handler(int sig) {
     // DEBUG: 15 lines
+
+    /* only fg job receive SIGINT */
     pid_t pid = fgpid(jobs);
     if (pid != 0) {
-        if (kill(-pid, SIGTSTP) != 0) {
+        /* Send SIGTSTP signal to the entire fg process group */
+        if (kill(-pid, SIGTSTP) != 0) { /* returns 0 if OK, -1 on error */
             unix_error("Suspend failed!");
         }
     }
