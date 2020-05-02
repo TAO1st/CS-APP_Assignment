@@ -392,6 +392,7 @@ void sigchld_handler(int sig) {
 
     pid_t pid;
     int status;
+    sigset_t mask_all, prev_all;
 
     if (verbose) printf("sigchld_handler: entering \n");
 
@@ -421,8 +422,6 @@ void sigchld_handler(int sig) {
                 fflush(stdout);
                 deletejob(jobs, pid);
             }
-
-            sigset_t mask_all, prev_all;
 
             sigfillset(&mask_all);
             sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
