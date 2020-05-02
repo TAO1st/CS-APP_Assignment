@@ -179,11 +179,11 @@ void eval(char *cmdline) {
 
     if (argv[0] == NULL) return;
 
-    sigfillset(&mask_all);
-    sigemptyset(&mask_one);
-    sigaddset(&mask_one, SIGCHLD);
+    sigfillset(&mask_all);         /* use it to mask all signals */
+    sigemptyset(&mask_one);        /* empty mask_one first */
+    sigaddset(&mask_one, SIGCHLD); /* use it to mask SIGCHLD */
 
-    if (!builtin_cmd(argv)) {
+    if (!builtin_cmd(argv)) { /* if it is builtin_cmd */
         /* Block SIGCHLD before parent forks the child */
         sigprocmask(SIG_BLOCK, &mask_one, &prev_one);
 
