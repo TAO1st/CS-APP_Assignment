@@ -366,8 +366,11 @@ void do_bgfg(char **argv) {
 void waitfg(pid_t pid) {
     // DEBUG: 20 lines (pass)
     sigset_t mask_temp;
+
+    /* can be interrupted by any signals */
     sigemptyset(&mask_temp);  /* unblock any signal */
     while (fgpid(jobs) > 0) { /* use a busy loop around sleep function */
+        /* blocked until process pid is no longer fg process */
         sigsuspend(&mask_temp);
     }
     return;
