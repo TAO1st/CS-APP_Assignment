@@ -398,24 +398,32 @@ void sigchld_handler(int sig) {
 
     /*
      * Reap any zombie jobs.
-     * The WNOHANG here is important. Without it, the
-     * the handler would wait for all running or stopped BG
-     * jobs to terminate, during which time the shell would not
-     * be able to accept input.
+     * The WNOHANG here is important. Without it, the the handler would wait for
+     * all running or stopped BG jobs to terminate, during which time the shell
+     * would not be able to accept input.
+     *
+     * WUNTRACED | WNOHANG: return immediately, with a retrun value of 0, if
+     * none of the children in the wait set has stopped or terminated, or with a
+     * return value equal to the PID of one of the stopped or terminated
+     * children.
      */
     while ((pid = waitpid(-1, &status, WUNTRACED | WNOHANG)) > 0) {
-        /* FG job has stopped. Change its state in jobs list */
+        /* WIFSTOPPED(status) returns true if the child that caused the
+         * return is currently stopped */
         if (WIFSTOPPED(status)) {
+            /* FG job has stopped. Change its state in jobs list */
             sprintf(sbuf, "Job [%d] (%d) stopped by signal %d", pid2jid(pid),
                     pid, WSTOPSIG(status));
             printf("%s\n", sbuf);
             updatejob(jobs, pid, ST);
         }
 
-        /* FG job has terminated. Remove it from jobs list */
         else {
-            /* check if job was terminated by an uncaught signal */
+            /* check if job was terminated by an uncaught signal.
+             * WIFSIGNALED(status) returns true if the child process terminated
+             * beacuse of a signal that was not caught */
             if (WIFSIGNALED(status)) {
+                /* FG job has terminated. Remove it from jobs list */
                 sprintf(sbuf, "Job [%d] (%d) terminated by signal %d",
                         pid2jid(pid), pid, WTERMSIG(status));
                 printf("%s\n", sbuf);
@@ -423,9 +431,11 @@ void sigchld_handler(int sig) {
                 deletejob(jobs, pid);
             }
 
+            /* Block all signals and save previous blocked set */
             sigfillset(&mask_all);
             sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
             deletejob(jobs, pid);
+            /* Restore previous blocked set */
             sigprocmask(SIG_SETMASK, &prev_all, NULL);
 
             if (verbose) printf("sigchld_handler: job %d deleted\n", pid);
