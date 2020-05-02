@@ -347,14 +347,16 @@ void do_bgfg(char **argv) {
     }
 
     if (!strcmp(cmd, "bg")) {
-        kill(-pid, SIGCONT);
+        /* if the process in the group in suspended, then it'll continue */
+        kill(-pid, SIGCONT); /* Send SIGCONT to the whole pid process group */
         updatejob(jobs, pid, BG);
         printf("[%d] (%d) %s", pid2jid(pid), pid, jobp->cmdline);
     }
     if (!strcmp(cmd, "fg")) {
-        kill(-pid, SIGCONT);
+        /* if the process in the group in suspended, then it'll continue */
+        kill(-pid, SIGCONT); /* Send SIGCONT to the whole pid process group */
         updatejob(jobs, pid, FG);
-        waitfg(pid);
+        waitfg(pid); /* wait for the fg job to terminate */
     }
 }
 
