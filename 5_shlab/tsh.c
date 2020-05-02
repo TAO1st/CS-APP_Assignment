@@ -151,7 +151,7 @@ int main(int argc, char **argv) {
     exit(0); /* control never reaches here */
 }
 
-/*
+/* (Graded)
  * eval - Evaluate the command line that the user has just typed in
  *
  * If the user has requested a built-in command (quit, jobs, bg or fg)
@@ -163,8 +163,6 @@ int main(int argc, char **argv) {
  * when we type ctrl-c (ctrl-z) at the keyboard.
  */
 void eval(char *cmdline) {
-    // DEBUG: 70 lines
-
     pid_t pid;           /* Process id */
     int bg;              /* Should the job runin bg or fg */
     char *argv[MAXARGS]; /* Argument list execve() */
@@ -270,13 +268,11 @@ int parseline(const char *cmdline, char **argv) {
     return bg;
 }
 
-/*
+/* (Graded)
  * builtin_cmd - If the user has typed a built-in command then execute
  *    it immediately.
  */
 int builtin_cmd(char **argv) {
-    // DEBUG: 25 lines (pass)
-
     if (!strcmp(argv[0], "&")) /* Ignore singleton & */
     {
         return 1;
@@ -305,11 +301,10 @@ int builtin_cmd(char **argv) {
     return 0; /* not a builtin command */
 }
 
-/*
+/* (Graded)
  * do_bgfg - Execute the builtin bg and fg commands
  */
 void do_bgfg(char **argv) {
-    // DEBUG: 50 lines (pass)
     struct job_t *jobp;      /* current job pointer */
     char *cmd = argv[0];     /* pointer to "bg" or "fg" */
     char *arg = &argv[1][1]; /* pointer to pid or jid */
@@ -360,11 +355,10 @@ void do_bgfg(char **argv) {
     }
 }
 
-/*
+/* (Graded)
  * waitfg - Block until process pid is no longer the foreground process
  */
 void waitfg(pid_t pid) {
-    // DEBUG: 20 lines (pass)
     sigset_t mask_temp;
 
     /* can be interrupted by any signals */
@@ -380,7 +374,7 @@ void waitfg(pid_t pid) {
  * Signal handlers
  *****************/
 
-/*
+/* (Graded)
  * sigchld_handler - The kernel sends a SIGCHLD to the shell whenever
  *     a child job terminates (becomes a zombie), or stops because it
  *     received a SIGSTOP or SIGTSTP signal. The handler reaps all
@@ -388,8 +382,6 @@ void waitfg(pid_t pid) {
  *     currently running children to terminate.
  */
 void sigchld_handler(int sig) {
-    // DEBUG: 80 lines
-
     pid_t pid;
     int status;
     sigset_t mask_all, prev_all;
@@ -458,14 +450,12 @@ void sigchld_handler(int sig) {
     return;
 }
 
-/*
+/* (Graded)
  * sigint_handler - The kernel sends a SIGINT to the shell whenver the
  *    user types ctrl-c at the keyboard.  Catch it and send it along
  *    to the foreground job.
  */
 void sigint_handler(int sig) {
-    // DEBUG: 15 lines (pass)
-
     /* only fg job receive SIGINT */
     pid_t pid = fgpid(jobs);
     if (pid) {
@@ -477,14 +467,12 @@ void sigint_handler(int sig) {
     return;
 }
 
-/*
+/* (Graded)
  * sigtstp_handler - The kernel sends a SIGTSTP to the shell whenever
  *     the user types ctrl-z at the keyboard. Catch it and suspend the
  *     foreground job by sending it a SIGTSTP.
  */
 void sigtstp_handler(int sig) {
-    // DEBUG: 15 lines
-
     /* only fg job receive SIGINT */
     pid_t pid = fgpid(jobs);
     if (pid != 0) {
