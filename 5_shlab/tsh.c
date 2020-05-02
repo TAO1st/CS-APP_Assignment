@@ -310,9 +310,11 @@ int builtin_cmd(char **argv) {
  */
 void do_bgfg(char **argv) {
     // DEBUG: 50 lines (pass)
-    struct job_t *jobp;
-    char *cmd = argv[0];
-    int pid;
+    struct job_t *jobp;      /* current job pointer */
+    char *cmd = argv[0];     /* pointer to "bg" or "fg" */
+    char *arg = &argv[1][1]; /* pointer to pid or jid */
+    int jid = atoi(arg);     /* jid (without %) */
+    int pid;                 /* pid */
 
     /* ignore command if no argument */
     if (argv[1] == NULL) {
@@ -321,8 +323,6 @@ void do_bgfg(char **argv) {
     }
 
     if (argv[1][0] == '%') { /* handle for jid */
-        char *arg = &argv[1][1];
-        int jid = atoi(arg);
         jobp = getjobjid(jobs, jid);
 
         if (jobp == NULL) {
