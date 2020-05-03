@@ -18,6 +18,8 @@ stages:
   - 4_cachelab:autograding
   - 5_shlab:build
   - 5_shlab:autograding
+  - 6_malloclab:build
+  - 6_malloclab:autograding
 
 jobs:
   include:
@@ -83,3 +85,14 @@ jobs:
         - make clean
         - make
         - ./autograding.sh
+    - stage: 6_malloclab:build
+      script:
+        - cd 6_malloclab
+        - make clean
+        - make
+    - stage: 6_malloclab:autograding
+      script:
+        - cd 6_malloclab
+        - make clean
+        - make
+        - ./mdriver -v
