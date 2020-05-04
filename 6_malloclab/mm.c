@@ -56,11 +56,15 @@ team_t team = {
 
 /* Read and write a word at address p */
 #define GET(p) (*(unsigned int *)(p))
-#define PUT(p, val) (*(unsigned int *)(p) = (val))
+#define PUT(p, val) (*(unsigned int *)(p) = (val) | GET_TAG(p))
+#define PUT_NOTAG(p, val) (*(unsigned int *)(p) = (val))
 
 /* Read the size and allocated fields from address p */
 #define GET_SIZE(p) (GET(p) & ~0x7)
 #define GET_ALLOC(p) (GET(p) & 0x1)
+#define GET_TAG(p) (GET(p) & 0x2)
+#define SET_RATAG(p) (GET(p) |= 0x2)
+#define REMOVE_RATAG(p) (GET(p) &= ~0x2)
 
 /* Given block ptr bp, compute address of its header and footer */
 #define HDRP(bp) ((char *)(bp)-WSIZE)                         // hdrp
@@ -69,6 +73,18 @@ team_t team = {
 /* Given block ptr bp, compute address of next and previous blocks */
 #define NEXT_BLKP(bp) ((char *)(bp) + GET_SIZE(((char *)(bp)-WSIZE)))
 #define PREV_BLKP(bp) ((char *)(bp)-GET_SIZE(((char *)(bp)-DSIZE)))
+
+/* Given the address of the free block's pred and succ */
+#define PRED_PTR(ptr) ((char *)(ptr))
+#define SUCC_PTR(ptr) ((char *)(ptr) + WSIZE)
+
+/* Given the address of the free block's pred and succ */
+#define PRED(ptr) (*(char **)(ptr))
+#define SUCC(ptr) (*(char **)(SUCC_PTR(ptr)))
+
+/* Set pred or succ pointer for free blocks */
+#define SET_PTR(p, ptr) (*(unsigned int *)(p) = (unsigned int)(ptr))
+
 /* $end mallocmacros */
 
 /* Global variables */
@@ -78,6 +94,7 @@ void *free_lists[LIST];      /* store the segregate free list */
 /* Function prototypes for internal helper routines */
 static void mm_check();
 static void *extend_heap(size_t words);
+static void insert_node(void *ptr, size_t size);
 static void place(void *bp, size_t asize);
 static void *find_fit(size_t asize);
 static void *coalesce(void *bp);
@@ -263,7 +280,7 @@ static void *extend_heap(size_t words) {
     size_t size;
 
     /* if NO ENOUGH SPACE */
-    if ((long)(bp = mem_sbrk(size)) == -1) return NULL;  // line:vm:mm:endextend
+    if ((long)(bp = mem_sbrk(size)) == -1) return NULL;
 
     /* Initialize free block header/footer and the epilogue header */
 
@@ -275,6 +292,9 @@ static void *extend_heap(size_t words) {
 
     /* New epilogue header */
     PUT(HDRP(NEXT_BLKP(bp)), PACK(0, 1));
+
+    /* Insert extended block to the free list */
+    insert_node(bp, size);
 
     /* Coalesce if the previous block was free */
     return coalesce(bp);  // line:vm:mm:returnblock
@@ -303,17 +323,67 @@ static void place(void *bp, size_t asize) {
  * insert_node - Insert current node to the segregated free list
  */
 static void insert_node(void *ptr, size_t size) {
-    int index;
-    void *next = ptr;
-    void *before = NULL;
+    int index;  /* the index of the free list */
+    void *pred; /* points to the previous free block node */
+    void *succ; /* points to the next free block node */
 
+    /* find the proper index in the free list */
+    /* size class: free_list[0]={1}, free_list[1]={2~3}, free_list[2]={4~7}*/
     for (index = 0; index < LIST - 1; index++) {
         if (size > 1) {
             size = size >> 1;
         } else
             break;
     }
-    next = free_lists[index];
+    succ = free_lists[index];
+
+    /* traverse to find a position for node inputing */
+    while (succ != NULL && size < GET_SIZE(HDRP(succ))) {
+        pred = succ;
+        succ = PRED(succ);
+    }
+
+    /* IF succ is not the end of the list */
+    if (succ != NULL) {
+        /* ptr is the succ of succ node */
+        SET_PTR(PRED_PTR(ptr), succ);
+        SET_PTR(SUCC_PTR(succ), ptr);
+
+        /* IF pred is not the root of the list */
+        if (pred != NULL) {
+            /* insert ptr between the list */
+            SET_PTR(PRED_PTR(pred), ptr);
+            SET_PTR(SUCC_PTR(ptr), pred);
+        }
+        /* ELSE pred is the root of the list */
+        else {
+            /* insert ptr at the begining of the list */
+            SET_PTR(SUCC_PTR(ptr), NULL);
+
+            /* update the root of the free list */
+            free_lists[index] = ptr;
+        }
+    } 
+    /* ELSE succ is the end of the list */
+    else {
+        /* the pred of ptr is NULL */
+        SET_PTR(PRED_PTR(ptr), NULL);
+
+        /* IF pred is not the root of the list */
+        if (pred != NULL) {
+            /* insert ptr between the list */
+            SET_PTR(SUCC_PTR(ptr), pred);
+            SET_PTR(PRED_PTR(pred), ptr);
+        }
+        /* ELSE the list is empty */
+        else {
+            /* insert ptr at the begining of the list */
+            SET_PTR(SUCC_PTR(ptr), NULL);
+            /* update the root of the free list */
+            free_lists[index] = ptr;
+        }
+    }
+    return;
 }
 
 /*
