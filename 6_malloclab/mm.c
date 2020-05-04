@@ -246,7 +246,7 @@ void *mm_realloc(void *ptr, size_t size)
 }
 
 /*
- * checkheap - Minimal check of the heap for consistency
+ * mm_check - Minimal check of the heap for consistency
  */
 static void mm_check()
 {
@@ -341,7 +341,7 @@ static void printblock(void *bp)
 {
     size_t hsize, halloc, fsize, falloc;
 
-    checkheap(0);
+    mm_check();
     hsize = GET_SIZE(HDRP(bp));
     halloc = GET_ALLOC(HDRP(bp));
     fsize = GET_SIZE(FTRP(bp));
