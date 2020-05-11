@@ -21,4 +21,5 @@ All the lab assignment is built, compiled and autograded by [Travis-CI](https://
 | 3_attacklab |  pass all 3 ctarget + 2 rtarget   |      /      |      /       |
 | 4_cachelab  |        Total points: 53/53        |  No leaks   |     Pass     |
 | 5_shelllab  |        Total points: 90/90        |      /      |     Pass     |
+| 6_malloclab |   58 (util) + 40 (thru) = 98/100  |      /      |     Pass     |
 
