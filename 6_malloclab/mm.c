@@ -32,7 +32,7 @@ team_t team = {
     /* Second member's email address (leave blank if none) */
     ""};
 
-#define DEBUG 1
+// #define DEBUG 1
 /* If you want debugging output, use the following macro.  When you hand
  * in, remove the #define DEBUG line. */
 #ifdef DEBUG
