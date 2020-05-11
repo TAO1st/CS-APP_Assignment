@@ -88,11 +88,13 @@ jobs:
     - stage: 6_malloclab:build
       script:
         - cd 6_malloclab
+        - sudo apt-get install gcc-multilib
         - make clean
         - make
     - stage: 6_malloclab:autograding
       script:
         - cd 6_malloclab
+        - sudo apt-get install gcc-multilib
         - make clean
         - make
-        - ./mdriver -v
+        - ./mdriver -V
