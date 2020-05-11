@@ -6,7 +6,7 @@ VERSION = 1
 HANDINDIR = ./handin
 
 CC = gcc
-CFLAGS = -g -w -O0 -m32 # -Wall -O2 # -m32
+CFLAGS = -g -w -O2 -m32 # -Wall -O2 # -m32
 
 OBJS = mdriver.o mm.o memlib.o fsecs.o fcyc.o clock.o ftimer.o
 
